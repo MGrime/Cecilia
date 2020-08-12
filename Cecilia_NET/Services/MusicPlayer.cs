@@ -72,7 +72,8 @@ namespace Cecilia_NET.Services
                     while (activeClient.Playing)
                     {
                         // Get song from queue
-                        using var ffmpeg = CreateStream(activeClient.Queue.Dequeue());
+                        string filePath = activeClient.Queue.Dequeue();
+                        using var ffmpeg = CreateStream(filePath);
                         // Setup ffmpeg output
                         await using var output = ffmpeg.StandardOutput.BaseStream;
                         // Create discord pcm stream
@@ -83,6 +84,9 @@ namespace Cecilia_NET.Services
                         // Stream and await till finish
                         try { await output.CopyToAsync(discord); }
                         finally { await discord.FlushAsync(); }
+
+                        // Delete used file
+                        System.IO.File.Delete(filePath);
                         
                         // Now check queue and reloop if songs playing
                         if (activeClient.Queue.Count != 0) continue;
