@@ -114,6 +114,9 @@ namespace Cecilia_NET.Modules
 
             // 4. Notify added
             await Context.Channel.SendMessageAsync($"Added {uri} to the queue!");
+            
+            // Now play
+            await _musicPlayer.PlayAudio(Context.Guild.Id);
         }
 
         private readonly MusicPlayer _musicPlayer;

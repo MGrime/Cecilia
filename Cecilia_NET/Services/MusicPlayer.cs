@@ -11,25 +11,21 @@ namespace Cecilia_NET.Services
     {
         public MusicPlayer()
         {
-            _activeAudioClients = new List<Tuple<ulong, IAudioClient, List<string>>>();
-            _queueMutexes = new List<Tuple<ulong, Mutex>>();
+            _activeAudioClients = new Dictionary<ulong, WrappedAudioClient>();
         }
         
         public void RegisterAudioClient(ulong guildId,IAudioClient client)
         {
             // Add the audio client
-            _activeAudioClients.Add(new Tuple<ulong, IAudioClient, List<string>>(guildId,client,new List<string>()));
-            _queueMutexes.Add(new Tuple <ulong,Mutex>(guildId,new Mutex()));
-            
+            _activeAudioClients.Add(guildId, new WrappedAudioClient(client));
+
             Console.WriteLine("Client added!");
         }
 
         public void RemoveAudioClient(ulong guildId)
         {
-            var client =_activeAudioClients.FindIndex(x => x.Item1 == guildId);
-            _activeAudioClients.RemoveAt(client);
-            _queueMutexes.RemoveAt(client);    // This works as they are always in sync
-            
+            _activeAudioClients.Remove(guildId);
+
             Console.WriteLine("Client removed!");
         }
 
@@ -37,7 +33,7 @@ namespace Cecilia_NET.Services
         {
             // THIS METHOD REQUIRES A MUTEX INCASE MULTIPLE SONGS ARE QUEUED UP IN QUICK SUCCESSION
             // Find the mutex for this queue
-            var mutex = _queueMutexes.Find(x => x.Item1 == guildId)?.Item2;// There is always a mutex for each queue
+            var mutex = _activeAudioClients[guildId].Mutex;
             // Just make sure
             if (mutex == null)
             {
@@ -47,15 +43,110 @@ namespace Cecilia_NET.Services
             mutex.WaitOne(-1);
             Console.WriteLine("Adding to queue for guild: " + guildId);
             // Add song to queue
-            _activeAudioClients.Find(x=> x.Item1 == guildId)?.Item3.Add(filePath);
+            _activeAudioClients[guildId].Queue.Enqueue(filePath);
             // Release mutex
             Console.WriteLine("Added to queue for guild: " + guildId);
             mutex.ReleaseMutex();
             
         }
+
+        public async Task PlayAudio(ulong guildId)
+        {
+            // TODO: add checks if this used outside of the add song command
+            // Find correct client
+            var activeClient = _activeAudioClients[guildId];
+            if (activeClient != null)
+            {
+                // Check if already playing audio
+                if (activeClient.Playing)
+                {
+                    // exit no need
+                    return;
+                }
+                // Check queue status
+                if (activeClient.Queue.Count != 0)
+                {
+                    // Set playing
+                    activeClient.Playing = true;
+                    // While there are songs to play
+                    while (activeClient.Playing)
+                    {
+                        // Get song from queue
+                        using var ffmpeg = CreateStream(activeClient.Queue.Dequeue());
+                        // Setup ffmpeg output
+                        await using var output = ffmpeg.StandardOutput.BaseStream;
+                        // Create discord pcm stream
+                        await using var discord = activeClient.Client.CreatePCMStream(AudioApplication.Mixed);
+
+                        // Set speaking indicator
+                        await activeClient.Client.SetSpeakingAsync(true);
+                        // Stream and await till finish
+                        try { await output.CopyToAsync(discord); }
+                        finally { await discord.FlushAsync(); }
+                        
+                        // Now check queue and reloop if songs playing
+                        if (activeClient.Queue.Count != 0) continue;
+                        // No more songs so exit
+                        activeClient.Playing = false;
+                        await activeClient.Client.SetSpeakingAsync(false);
+                    }
+                }
+            }
+            
+            
+        }
         
-        // List of active audio clients
-        private readonly List<Tuple<ulong,Mutex>> _queueMutexes;
-        private readonly List<Tuple<ulong,IAudioClient,List<string>>> _activeAudioClients;
+        private Process CreateStream(string path)
+        {
+            return Process.Start(new ProcessStartInfo
+            {
+                FileName = "ffmpeg",
+                Arguments = $"-hide_banner -loglevel panic -i \"{path}\" -ac 2 -f s16le -ar 48000 pipe:1",
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+            });
+        }
+        
+        // Wraps the client with a queue and a mutex control for data access.
+        private class WrappedAudioClient
+        {
+            private IAudioClient _client;
+            private Queue<string> _queue;
+            private bool _playing;
+            private Mutex _mutex;
+
+            public WrappedAudioClient(IAudioClient client)
+            {
+                _client = client;
+                _queue = new Queue<string>();
+                _playing = false;
+                _mutex = new Mutex();
+            }
+
+            public IAudioClient Client
+            {
+                get => _client;
+                set => _client = value;
+            }
+
+            public Queue<string> Queue
+            {
+                get => _queue;
+                set => _queue = value;
+            }
+
+            public bool Playing
+            {
+                get => _playing;
+                set => _playing = value;
+            }
+
+            public Mutex Mutex
+            {
+                get => _mutex;
+                set => _mutex = value;
+            }
+        }
+        private readonly Dictionary<ulong,WrappedAudioClient> _activeAudioClients;
     }
 }
