@@ -82,8 +82,14 @@ namespace Cecilia_NET.Services
                         // Set speaking indicator
                         await activeClient.Client.SetSpeakingAsync(true);
                         // Stream and await till finish
-                        try { await output.CopyToAsync(discord); }
-                        finally { await discord.FlushAsync(); }
+                        try
+                        {
+                            await output.CopyToAsync(discord);
+                        }
+                        finally
+                        {
+                            await discord.FlushAsync();
+                        }
 
                         // Delete used file
                         System.IO.File.Delete(filePath);

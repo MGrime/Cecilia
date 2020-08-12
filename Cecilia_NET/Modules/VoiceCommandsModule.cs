@@ -21,7 +21,7 @@ namespace Cecilia_NET.Modules
         public async Task JoinAsync(IVoiceChannel channel = null)
         {
             // Check for pre-existing connection
-            if (Context.Guild.AudioClient != null)
+            if (Context.Guild.AudioClient != null && Context.Guild.AudioClient.ConnectionState != ConnectionState.Disconnected)
             {
                 await Context.Channel.SendMessageAsync(
                     "I'm already connected! Drag me to a different room if you want to switch.");
@@ -76,7 +76,7 @@ namespace Cecilia_NET.Modules
         public async Task PlayAsync([Remainder] [Summary("The URL to play.")] string uri)
         {
             // Check if connected to voice
-            if (Context.Guild.AudioClient == null)
+            if (Context.Guild.AudioClient == null || Context.Guild.AudioClient.ConnectionState != ConnectionState.Connected)
             {
                 // We aren't connected. But if the user is in a channel auto connect
                 var user = Context.User as SocketGuildUser;
