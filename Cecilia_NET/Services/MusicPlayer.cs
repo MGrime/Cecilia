@@ -3,7 +3,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using Discord;
 using Discord.Audio;
+using Discord.WebSocket;
+using YoutubeExplode.Videos;
 
 namespace Cecilia_NET.Services
 {
@@ -29,7 +32,7 @@ namespace Cecilia_NET.Services
             Console.WriteLine("Client removed!");
         }
 
-        public void AddSongToQueue(ulong guildId,string filePath)
+        public void AddSongToQueue(ulong guildId,string filePath,Video videoData, ref EmbedBuilder addedEmbed)
         {
             // THIS METHOD REQUIRES A MUTEX INCASE MULTIPLE SONGS ARE QUEUED UP IN QUICK SUCCESSION
             // Find the mutex for this queue
@@ -43,14 +46,26 @@ namespace Cecilia_NET.Services
             mutex.WaitOne(-1);
             Console.WriteLine("Adding to queue for guild: " + guildId);
             // Add song to queue
-            _activeAudioClients[guildId].Queue.Enqueue(filePath);
+            _activeAudioClients[guildId].Queue.AddLast(new Tuple<string, EmbedBuilder>(filePath,new EmbedBuilder()));
             // Release mutex
             Console.WriteLine("Added to queue for guild: " + guildId);
             mutex.ReleaseMutex();
             
+            // create embed
+            // Caching so it can be modified for playing message
+            var activeEmbed = _activeAudioClients[guildId].Queue.Last.Value.Item2;
+            activeEmbed.WithImageUrl(videoData.Thumbnails.MediumResUrl);
+            activeEmbed.WithTitle("Added song!");// This can be switched later
+            activeEmbed.AddField("Title", videoData.Title);
+            activeEmbed.AddField("Length", videoData.Duration.Minutes + " min " + videoData.Duration.Seconds + " secs");
+            activeEmbed.AddField("Uploader", videoData.Author);
+            activeEmbed.AddField("Queue Position", _activeAudioClients[guildId].Queue.Count);
+
+            // Pass back
+            addedEmbed = activeEmbed;
         }
 
-        public async Task PlayAudio(ulong guildId)
+        public async Task PlayAudio(ulong guildId, ISocketMessageChannel channel)
         {
             // TODO: add checks if this used outside of the add song command
             // Find correct client
@@ -72,7 +87,7 @@ namespace Cecilia_NET.Services
                     while (activeClient.Playing)
                     {
                         // Get song from queue
-                        string filePath = activeClient.Queue.Dequeue();
+                        var filePath = activeClient.Queue.First.Value.Item1;
                         using var ffmpeg = CreateStream(filePath);
                         // Setup ffmpeg output
                         await using var output = ffmpeg.StandardOutput.BaseStream;
@@ -81,6 +96,16 @@ namespace Cecilia_NET.Services
 
                         // Set speaking indicator
                         await activeClient.Client.SetSpeakingAsync(true);
+                        
+                        // Send playing message
+                        // Modify embed
+                        var activeEmbed = activeClient.Queue.First.Value.Item2;
+                        // Set playing title
+                        activeEmbed.WithTitle("Now Playing!");
+                        // Remove queue counter at the end of fields
+                        activeEmbed.Fields.RemoveAt(activeEmbed.Fields.Count - 1);
+                        // Send
+                        await channel.SendMessageAsync("", false, activeEmbed.Build());
                         // Stream and await till finish
                         try
                         {
@@ -91,11 +116,32 @@ namespace Cecilia_NET.Services
                             await discord.FlushAsync();
                         }
 
-                        // Delete used file
-                        System.IO.File.Delete(filePath);
+                        // Delete used file && release queue
+                        activeClient.Queue.RemoveFirst();
+                        // Check queue. If same song is queued do not delete file
+                        if (activeClient.Queue.Count != 0)
+                        {
+                            // Check file before cont
+                            // Stops file deleting if same song is multi queued
+                            // TODO: This sucks. make it more efficient - Michael
+                            var found = false;
+                            foreach (var queueItem in activeClient.Queue)
+                            {
+                                if (queueItem.Item1.Equals(filePath))
+                                {
+                                    found = true;
+                                    break;
+                                }
+                            }
+
+                            if (!found)
+                            {
+                                System.IO.File.Delete(filePath);
+                            }
+                            
+                            continue;
+                        }
                         
-                        // Now check queue and reloop if songs playing
-                        if (activeClient.Queue.Count != 0) continue;
                         // No more songs so exit
                         activeClient.Playing = false;
                         await activeClient.Client.SetSpeakingAsync(false);
@@ -118,17 +164,17 @@ namespace Cecilia_NET.Services
         }
         
         // Wraps the client with a queue and a mutex control for data access.
-        private class WrappedAudioClient
+        public class WrappedAudioClient
         {
             private IAudioClient _client;
-            private Queue<string> _queue;
+            private LinkedList<Tuple<string,EmbedBuilder>> _queue;
             private bool _playing;
             private Mutex _mutex;
 
             public WrappedAudioClient(IAudioClient client)
             {
                 _client = client;
-                _queue = new Queue<string>();
+                _queue = new LinkedList<Tuple<string,EmbedBuilder>>();
                 _playing = false;
                 _mutex = new Mutex();
             }
@@ -139,7 +185,7 @@ namespace Cecilia_NET.Services
                 set => _client = value;
             }
 
-            public Queue<string> Queue
+            public LinkedList<Tuple<string,EmbedBuilder>> Queue
             {
                 get => _queue;
                 set => _queue = value;
@@ -158,5 +204,7 @@ namespace Cecilia_NET.Services
             }
         }
         private readonly Dictionary<ulong,WrappedAudioClient> _activeAudioClients;
+
+        public Dictionary<ulong, WrappedAudioClient> ActiveAudioClients => _activeAudioClients;
     }
 }

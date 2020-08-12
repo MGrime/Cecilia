@@ -1,3 +1,5 @@
+using System.IO;
+using System.Net;
 using System.Threading.Tasks;
 using Cecilia_NET.Services;
 using Discord;
@@ -93,30 +95,46 @@ namespace Cecilia_NET.Modules
                 // Then continue if connected
             }
             
-            // TODO: TAKE LINK. DOWNLOAD YOUTUBE AS MP3. ADD TO QUEUE
+
             // Start youtube explode
             var youtube = new YoutubeClient();
-            // Get video metadata
+            // Get video metadata & download thumbnail
             var video = await youtube.Videos.GetAsync(uri);
-            // get streams
-            var streams = await youtube.Videos.Streams.GetManifestAsync(video.Id);
-            // Pick best audio stream
-            var streamInfo = streams.GetAudioOnly().WithHighestBitrate();
-            // Download
-            if (streamInfo != null)
+            // Check if file exists. If it does skip the download#
+            // TODO: This sucks. Make it more efficient - Michael
+            bool fileExists = false;
+            foreach (var file in Directory.GetFiles("AudioCache/"))
             {
-                // Download
-                await youtube.Videos.Streams.DownloadAsync(streamInfo, $"AudioCache/{video.Title}.mp3");
+                if (file == $"{video.Title}.mp3")
+                {
+                    fileExists = true;
+                    break;
+                }
             }
-            
+            // Only download if it doesnt already exist
+            if (!fileExists)
+            {
+                // get streams
+                var streams = await youtube.Videos.Streams.GetManifestAsync(video.Id);
+                // Pick best audio stream
+                var streamInfo = streams.GetAudioOnly().WithHighestBitrate();
+                // Download
+                if (streamInfo != null)
+                {
+                    // Download
+                    await youtube.Videos.Streams.DownloadAsync(streamInfo, $"AudioCache/{video.Title}.mp3");
+                }
+            }
+
             // 3. Add to queue
-            _musicPlayer.AddSongToQueue(Context.Guild.Id,$"AudioCache/{video.Title}.mp3");
+            EmbedBuilder builder = new EmbedBuilder();
+            _musicPlayer.AddSongToQueue(Context.Guild.Id,$"AudioCache/{video.Title}.mp3",video, ref builder);
 
             // 4. Notify added
-            await Context.Channel.SendMessageAsync($"Added {uri} to the queue!");
+            await Context.Channel.SendMessageAsync("", false, builder.Build());
             
             // Now play
-            await _musicPlayer.PlayAudio(Context.Guild.Id);
+            await _musicPlayer.PlayAudio(Context.Guild.Id,Context.Channel);
         }
 
         private readonly MusicPlayer _musicPlayer;
