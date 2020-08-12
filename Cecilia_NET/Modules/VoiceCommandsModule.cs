@@ -2,6 +2,10 @@ using System.Threading.Tasks;
 using Cecilia_NET.Services;
 using Discord;
 using Discord.Commands;
+using Discord.WebSocket;
+using YoutubeExplode;
+using YoutubeExplode.Videos.Streams;
+
 
 namespace Cecilia_NET.Modules
 {
@@ -65,6 +69,54 @@ namespace Cecilia_NET.Modules
             // Now we have disconnected
             await Context.Channel.SendMessageAsync("I've disconnected!");
 
+        }
+
+        [Command("play", RunMode = RunMode.Async)]
+        [Summary("Adds a song to the play queue")]
+        public async Task PlayAsync([Remainder] [Summary("The URL to play.")] string uri)
+        {
+            // Check if connected to voice
+            if (Context.Guild.AudioClient == null)
+            {
+                // We aren't connected. But if the user is in a channel auto connect
+                var user = Context.User as SocketGuildUser;
+                if (user?.VoiceChannel != null)
+                {
+                    await JoinAsync(user.VoiceChannel);
+                }
+                // Else we fail out
+                else
+                {
+                    await Context.Channel.SendMessageAsync(
+                        "I'm not in a voice channel and neither are you! Please join one and re-run the command.");
+                }
+                // Then continue if connected
+            }
+            
+            // TODO: TAKE LINK. DOWNLOAD YOUTUBE AS MP3. ADD TO QUEUE
+            // Start youtube explode
+            var youtube = new YoutubeClient();
+            // Get video metadata
+            var video = await youtube.Videos.GetAsync(uri);
+            // get streams
+            var streams = await youtube.Videos.Streams.GetManifestAsync(video.Id);
+            // Pick best audio stream
+            var streamInfo = streams.GetAudioOnly().WithHighestBitrate();
+            // Download
+            if (streamInfo != null)
+            {
+                // Get the stream
+                var stream = await youtube.Videos.Streams.GetAsync(streamInfo);
+                
+                // Download
+                await youtube.Videos.Streams.DownloadAsync(streamInfo, $"AudioCache/{video.Title}.mp3");
+            }
+            
+            // 3. Add to queue
+            _musicPlayer.AddSongToQueue(Context.Guild.Id,$"AudioCache/{video.Title}.mp3");
+
+            // 4. Notify added
+            await Context.Channel.SendMessageAsync($"Added {uri} to the queue!");
         }
 
         private readonly MusicPlayer _musicPlayer;
