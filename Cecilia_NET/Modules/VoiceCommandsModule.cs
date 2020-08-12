@@ -105,9 +105,6 @@ namespace Cecilia_NET.Modules
             // Download
             if (streamInfo != null)
             {
-                // Get the stream
-                var stream = await youtube.Videos.Streams.GetAsync(streamInfo);
-                
                 // Download
                 await youtube.Videos.Streams.DownloadAsync(streamInfo, $"AudioCache/{video.Title}.mp3");
             }

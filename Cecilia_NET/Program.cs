@@ -9,7 +9,6 @@
 using System;
 using System.Threading.Tasks;
 using Cecilia_NET.Services;
-using Cecilia.NET;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;

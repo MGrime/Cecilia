@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Discord.Commands;
 using Discord.WebSocket;
 
-namespace Cecilia.NET
+namespace Cecilia_NET
 {
     public class CommandHandler
     {
@@ -20,7 +20,7 @@ namespace Cecilia.NET
         // Finds all of the command modules in the solution and register them to the command service
         public async Task InstallCommandsAsync()
         {
-            // Hook the message recieved client to our command handler
+            // Hook the message received client to our command handler
             _client.MessageReceived += HandleCommandAsync;
             
             // Load all modules within assembly to register commands
@@ -40,7 +40,7 @@ namespace Cecilia.NET
             
             // Make sure message is a command with correct prefix
             // Also ignore all bots command
-            // I don't like long code so im willing to make this comprimise with space
+            // I don't like long code so im willing to make this compromise with space
             var prefixed = message.HasStringPrefix(_commandPrefix, ref argPos);
             var mentioned = message.HasMentionPrefix(_client.CurrentUser, ref argPos);
             var isBot = message.Author.IsBot;
