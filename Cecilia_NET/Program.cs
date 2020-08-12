@@ -31,7 +31,7 @@ namespace Cecilia_NET
                 {
                     token = System.IO.File.ReadAllText(@"token.txt").Replace(Environment.NewLine,"");
                 }
-                catch (System.IO.FileNotFoundException e)
+                catch (System.IO.FileNotFoundException)
                 {
                     Console.WriteLine("ERROR: token.txt not found. Create a file with a Discord Token in the directory of the DLL. Press escape to quit! Press any other key to hot reload!");
                     if (Console.ReadKey().Key == ConsoleKey.Escape)
