@@ -29,7 +29,8 @@ namespace Cecilia_NET.Modules
                 await Context.Channel.SendMessageAsync(
                     "I'm already connected! Drag me to a different room if you want to switch.");
                 // Delete the user command
-                await Context.Channel.DeleteMessageAsync(Context.Message.Id);
+                Helpers.DeleteUserCommand(Context);
+
                 return;
             }
             
@@ -46,7 +47,8 @@ namespace Cecilia_NET.Modules
                 await Context.Channel.SendMessageAsync(
                     "Please first join a channel! Alternatively specify a valid channel as an argument");
                 // Delete the user command
-                await Context.Channel.DeleteMessageAsync(Context.Message.Id);
+                Helpers.DeleteUserCommand(Context);
+
                 return;
             }
             
@@ -57,9 +59,9 @@ namespace Cecilia_NET.Modules
 
             // Display connection message
             await Context.Channel.SendMessageAsync("I've connected! Thanks for inviting me, " + Helpers.GetDisplayName(Context.User) + "!");
-            
+
             // Delete the user command
-            await Context.Channel.DeleteMessageAsync(Context.Message.Id);
+            Helpers.DeleteUserCommand(Context);
         }
 
         [Command("leave",RunMode = RunMode.Async)]
@@ -67,8 +69,8 @@ namespace Cecilia_NET.Modules
         public async Task LeaveAsync()
         {
             // Delete the user command
-            await Context.Channel.DeleteMessageAsync(Context.Message.Id);
-            
+            Helpers.DeleteUserCommand(Context);
+
             // Check for connection
             if (Context.Guild.AudioClient == null || Context.Guild.AudioClient.ConnectionState == ConnectionState.Disconnected)
             {
@@ -142,7 +144,7 @@ namespace Cecilia_NET.Modules
             // Delete user command if not deleted by join
             if (Context.Channel.GetMessageAsync(Context.Message.Id).Result != null)
             {
-                await Context.Channel.DeleteMessageAsync(Context.Message.Id);
+                Helpers.DeleteUserCommand(Context);
             }
 
             // 3. Add to queue
@@ -165,7 +167,7 @@ namespace Cecilia_NET.Modules
             var message = await Context.Channel.SendMessageAsync("Skipping song! Requested by (" + Helpers.GetDisplayName(Context.User) + ")");
 
             // Delete the user command
-            await Context.Channel.DeleteMessageAsync(Context.Message.Id);
+            Helpers.DeleteUserCommand(Context);
         }
 
         [Command("pause", RunMode = RunMode.Async)]
@@ -177,9 +179,9 @@ namespace Cecilia_NET.Modules
                 Console.WriteLine("Pause requested!");
                 _musicPlayer.ActiveAudioClients[Context.Guild.Id].Paused = true;
                 await Context.Channel.SendMessageAsync("Pausing playback (Requested by " + Helpers.GetDisplayName(Context.User) + ")");
-                
+
                 // Delete the user command
-                await Context.Channel.DeleteMessageAsync(Context.Message.Id);
+                Helpers.DeleteUserCommand(Context);
             }
         }
 
@@ -194,7 +196,7 @@ namespace Cecilia_NET.Modules
                 await Context.Channel.SendMessageAsync("Resuming playback! (Requested by " + Helpers.GetDisplayName(Context.User) + ")");
 
                 // Delete the user command
-                await Context.Channel.DeleteMessageAsync(Context.Message.Id);
+                Helpers.DeleteUserCommand(Context);
             }
         }
 

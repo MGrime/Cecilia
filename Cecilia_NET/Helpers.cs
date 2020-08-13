@@ -1,3 +1,4 @@
+using Discord.Commands;
 using Discord.WebSocket;
 
 namespace Cecilia_NET
@@ -17,6 +18,11 @@ namespace Cecilia_NET
             {
                 return guildUser.Nickname ?? guildUser.Username;
             }
+        }
+
+        public async static void DeleteUserCommand(SocketCommandContext context)
+        {
+            await context.Channel.DeleteMessageAsync(context.Message.Id);
         }
 
         public static string ProcessVideoTitle(string videoTitle)
