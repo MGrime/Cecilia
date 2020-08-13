@@ -93,6 +93,10 @@ namespace Cecilia_NET.Modules
             {
                 // Get correct directory
                 var directoryPrefix = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? @"AudioCache\" : "AudioCache/";
+
+                // Close file streams so files can be deleted
+                _musicPlayer.CloseFileStreams();
+
                 // Clear it
                 foreach (var file in Directory.GetFiles(directoryPrefix))
                 {
