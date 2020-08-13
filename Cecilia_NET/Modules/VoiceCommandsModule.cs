@@ -146,6 +146,30 @@ namespace Cecilia_NET.Modules
             await Context.Channel.SendMessageAsync("Skipping song!");
         }
 
+        [Command("pause", RunMode = RunMode.Async)]
+        [Summary("Pauses playback")]
+        public async Task PauseAsync()
+        {
+            if (!_musicPlayer.ActiveAudioClients[Context.Guild.Id].Paused)
+            {
+                Console.WriteLine("Pause requested!");
+                _musicPlayer.ActiveAudioClients[Context.Guild.Id].Paused = true;
+                await Context.Channel.SendMessageAsync("Pausing playback!");
+            }
+        }
+
+        [Command("resume", RunMode = RunMode.Async)]
+        [Summary("Resumes playback")]
+        public async Task ResumeAsync()
+        {
+            if (_musicPlayer.ActiveAudioClients[Context.Guild.Id].Paused)
+            {
+                Console.WriteLine("Resume requested!");
+                _musicPlayer.ActiveAudioClients[Context.Guild.Id].Paused = false;
+                await Context.Channel.SendMessageAsync("Resuming playback!");
+            }
+        }
+
         private readonly MusicPlayer _musicPlayer;
     }
 }
