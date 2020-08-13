@@ -148,7 +148,6 @@ namespace Cecilia_NET.Services
 
                         // Flush buffer
                         discord?.FlushAsync().Wait();
-
                         
                         // Reset skip trigger
                         activeClient.Skip = false;
