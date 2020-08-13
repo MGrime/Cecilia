@@ -132,7 +132,7 @@ namespace Cecilia_NET.Modules
 
             // 3. Add to queue
             EmbedBuilder builder = new EmbedBuilder();
-            _musicPlayer.AddSongToQueue(Context.Guild.Id,$"AudioCache/{video.Title}.mp3",video, ref builder);
+            _musicPlayer.AddSongToQueue(Context,$"AudioCache/{video.Title}.mp3",video, ref builder);
 
             // 4. Notify added
             await Context.Channel.SendMessageAsync("", false, builder.Build());
