@@ -49,7 +49,7 @@ namespace Cecilia_NET.Services
             mutex.WaitOne(-1);
             Console.WriteLine("Adding to queue for guild: " + context.Guild.Id);
             // Add song to queue
-            _activeAudioClients[context.Guild.Id].Queue.AddLast(new Tuple<string, EmbedBuilder>(filePath,new EmbedBuilder()));
+            _activeAudioClients[context.Guild.Id].Queue.AddLast(new Tuple<string, EmbedBuilder>(filePath,Helpers.CeciliaEmbed(context)));
             // Release mutex
             Console.WriteLine("Added to queue for guild: " + context.Guild.Id);
             mutex.ReleaseMutex();
@@ -57,7 +57,6 @@ namespace Cecilia_NET.Services
             // create embed
             // Caching so it can be modified for playing message
             var activeEmbed = _activeAudioClients[context.Guild.Id].Queue.Last.Value.Item2;
-            activeEmbed = Helpers.CeciliaEmbed(context);
             activeEmbed.WithImageUrl(videoData.Thumbnails.MediumResUrl);
             activeEmbed.WithTitle("Added song!");// This can be switched later
             activeEmbed.AddField("Title",$"[{videoData.Title}]({videoData.Url})");
