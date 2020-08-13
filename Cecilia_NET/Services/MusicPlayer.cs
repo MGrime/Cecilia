@@ -148,29 +148,38 @@ namespace Cecilia_NET.Services
                         // Delete used file && release queue
                         activeClient.Queue.RemoveFirst();
                         // Check queue. If same song is queued do not delete file
-                        if (activeClient.Queue.Count != 0)
+                        // TODO: THIS MIGHT BREAK IF MULTIPLE SERVERS QUEUE THE SAME SONG AT THE SAME TIME SO COME LOOK AT THIS WHEN YOU CAN BE BOTHERED
+                        var found = false;
+                        foreach (var client in ActiveAudioClients)
                         {
-                            // Check file before cont
-                            // Stops file deleting if same song is multi queued
-                            // TODO: This sucks. make it more efficient - Michael
-                            var found = false;
-                            foreach (var queueItem in activeClient.Queue)
+                            if (client.Value.Queue.Count != 0)
                             {
-                                if (queueItem.Item1.Equals(filePath))
+                                // Check file before cont
+                                // Stops file deleting if same song is multi queued
+                                // TODO: This sucks. make it more efficient - Michael
+                               
+                                foreach (var queueItem in activeClient.Queue)
                                 {
-                                    found = true;
-                                    break;
+                                    if (queueItem.Item1.Equals(filePath))
+                                    {
+                                        found = true;
+                                        break;
+                                    }
                                 }
                             }
 
-                            if (!found)
+                            if (found)
                             {
-                                System.IO.File.Delete(filePath);
+                                break;
                             }
-                            
-                            continue;
                         }
-                        
+                        // If this is still false all queues have been check and it isnt there
+                        if (!found)
+                        {
+                            System.IO.File.Delete(filePath);
+                        }
+
+
                         // No more songs so exit
                         activeClient.Playing = false;
                         await activeClient.Client.SetSpeakingAsync(false);
