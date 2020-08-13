@@ -172,47 +172,6 @@ namespace Cecilia_NET.Services
             }
         }
 
-        public async Task SkipAudio(ulong guildId, ISocketMessageChannel channel)
-        {
-            var activeClient = _activeAudioClients[guildId];
-            if (activeClient != null)
-            {
-                // If no audio is playing
-                if (!activeClient.Playing)
-                {
-                    // exit no need
-                    return;
-                }
-                // Check queue status
-                if (activeClient.Queue.Count > 1)
-                {
-                    // Create discord pcm stream
-                    await using var discord = activeClient.Client.CreatePCMStream(AudioApplication.Music);
-
-                    // Stop playing
-                    activeClient.Playing = false;
-                    
-                    // Halt the async play operation
-                    await discord.FlushAsync();
-
-                    // Delete used file && release queue
-                    var filePath = activeClient.Queue.First.Value.Item1;
-
-                    System.IO.File.Delete(filePath);
-
-                    activeClient.Queue.RemoveFirst();
-
-                    // Send message that there is nothing else in the queue
-                    await channel.SendMessageAsync("Skipping...", false);
-                }
-                else
-                {
-                    // Send message that there is nothing else in the queue
-                    await channel.SendMessageAsync("There's nothing else in the queue. To stop playing, use command \"stop\"", false);
-                }
-            }
-        }
-        
         private Process CreateStream(string path)
         {
             return Process.Start(new ProcessStartInfo
