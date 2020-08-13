@@ -93,10 +93,8 @@ namespace Cecilia_NET.Services
                         await using var output = ffmpeg.StandardOutput.BaseStream;
                         // Create discord pcm stream
                         await using var discord = activeClient.Client.CreatePCMStream(AudioApplication.Music);
-
                         // Set speaking indicator
                         await activeClient.Client.SetSpeakingAsync(true);
-                        
                         // Send playing message
                         // Modify embed
                         var activeEmbed = activeClient.Queue.First.Value.Item2;
@@ -107,14 +105,38 @@ namespace Cecilia_NET.Services
                         // Send
                         await channel.SendMessageAsync("", false, activeEmbed.Build());
                         // Stream and await till finish
-                        try
+                        while (true)
                         {
-                            await output.CopyToAsync(discord);
+                            // Stream is over, broken, or skip requested
+                            if (ffmpeg.HasExited || discord == null || activeClient.Skip) break;
+                            
+                            // Pause function while not playing
+                            if (activeClient.Paused) continue;
+                            
+                            // Read a block of stream
+                            int blockSize = 1920;
+                            byte[] buffer = new byte[blockSize];
+                            var byteCount = await ffmpeg.StandardOutput.BaseStream.ReadAsync(buffer, 0, blockSize);
+                            
+                            // Stream cannot be read or file is ended
+                            if (byteCount <= 0) break;
+                            
+                            // Write output to stream
+                            try
+                            {
+                                await discord.WriteAsync(buffer, 0, byteCount);
+                            }
+                            catch (Exception e)
+                            {
+                                Console.WriteLine(e);
+                                throw;
+                            }
                         }
-                        finally
-                        {
-                            await discord.FlushAsync();
-                        }
+                        // Flush buffer
+                        discord?.FlushAsync().Wait();
+                        
+                        // Reset skip trigger
+                        activeClient.Skip = false;
 
                         // Delete used file && release queue
                         activeClient.Queue.RemoveFirst();
@@ -166,16 +188,25 @@ namespace Cecilia_NET.Services
         // Wraps the client with a queue and a mutex control for data access.
         public class WrappedAudioClient
         {
+            // The raw client
             private IAudioClient _client;
+            
+            // Queue and a mutex for accessing
             private LinkedList<Tuple<string,EmbedBuilder>> _queue;
-            private bool _playing;
             private Mutex _mutex;
+            
+            // Control over playing
+            private bool _playing;
+            private bool _paused;
+            private bool _skip;
 
             public WrappedAudioClient(IAudioClient client)
             {
                 _client = client;
                 _queue = new LinkedList<Tuple<string,EmbedBuilder>>();
                 _playing = false;
+                _paused = false;
+                _skip = false;
                 _mutex = new Mutex();
             }
 
@@ -197,11 +228,24 @@ namespace Cecilia_NET.Services
                 set => _playing = value;
             }
 
+            public bool Paused
+            {
+                get => _paused;
+                set => _paused = value;
+            }
+
+            public bool Skip
+            {
+                get => _skip;
+                set => _skip = value;
+            }
+
             public Mutex QueueMutex
             {
                 get => _mutex;
                 set => _mutex = value;
             }
+
         }
         private readonly Dictionary<ulong,WrappedAudioClient> _activeAudioClients;
 

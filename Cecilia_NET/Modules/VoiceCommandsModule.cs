@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Net;
 using System.Threading.Tasks;
@@ -135,6 +136,15 @@ namespace Cecilia_NET.Modules
             
             // Now play
             await _musicPlayer.PlayAudio(Context.Guild.Id,Context.Channel);
+        }
+
+        [Command("skip", RunMode = RunMode.Async)]
+        [Summary("Skips current song")]
+        public async Task SkipAsync()
+        {
+            Console.WriteLine("Skip requested!");
+            _musicPlayer.ActiveAudioClients[Context.Guild.Id].Skip = true;
+            await Context.Channel.SendMessageAsync("Skipping song!");
         }
 
         private readonly MusicPlayer _musicPlayer;
