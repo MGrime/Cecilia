@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Discord;
@@ -183,6 +185,7 @@ namespace Cecilia_NET.Services
                         // If this is still false all queues have been check and it isnt there
                         if (!found)
                         {
+                            output.Close();
                             System.IO.File.Delete(filePath);
                         }
 
