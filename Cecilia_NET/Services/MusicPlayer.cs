@@ -36,7 +36,7 @@ namespace Cecilia_NET.Services
         {
             // THIS METHOD REQUIRES A MUTEX INCASE MULTIPLE SONGS ARE QUEUED UP IN QUICK SUCCESSION
             // Find the mutex for this queue
-            var mutex = _activeAudioClients[guildId].Mutex;
+            var mutex = _activeAudioClients[guildId].QueueMutex;
             // Just make sure
             if (mutex == null)
             {
@@ -90,9 +90,9 @@ namespace Cecilia_NET.Services
                         var filePath = activeClient.Queue.First.Value.Item1;
                         using var ffmpeg = CreateStream(filePath);
                         // Setup ffmpeg output
-                        await using var output = ffmpeg.StandardOutput.BaseStream;
+                        var output = ffmpeg.StandardOutput.BaseStream;
                         // Create discord pcm stream
-                        await using var discord = activeClient.Client.CreatePCMStream(AudioApplication.Mixed);
+                        var discord = activeClient.Client.CreatePCMStream(AudioApplication.Music);
 
                         // Set speaking indicator
                         await activeClient.Client.SetSpeakingAsync(true);
