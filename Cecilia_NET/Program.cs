@@ -7,6 +7,7 @@
 // Discord API
 // Discord web connection
 using System;
+using System.IO;
 using System.Threading.Tasks;
 using Cecilia_NET.Services;
 using Discord;
@@ -38,6 +39,12 @@ namespace Cecilia_NET
                         return;
                     }
                 }
+            }
+            
+            // Create folders if not mad
+            if (!System.IO.Directory.Exists("AudioCache"))
+            {
+                System.IO.Directory.CreateDirectory("AudioCache");
             }
 
             // Transfer to async
