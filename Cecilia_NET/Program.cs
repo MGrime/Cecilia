@@ -41,12 +41,6 @@ namespace Cecilia_NET
                 }
             }
             
-            // Create folders if not mad
-            if (!System.IO.Directory.Exists("AudioCache"))
-            {
-                System.IO.Directory.CreateDirectory("AudioCache");
-            }
-
             // Transfer to async
             // Catching all exceptions that reach here just to clean up then close
             new Bot().MainASync(token).GetAwaiter().GetResult();
