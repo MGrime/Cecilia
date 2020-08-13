@@ -74,32 +74,6 @@ namespace Cecilia_NET.Modules
 
         }
 
-        [Command("skip", RunMode = RunMode.Async)]
-        [Summary("Skips the currently playing media")]
-        public async Task SkipAsync()
-        {
-            // Check if connected to voice
-            if (Context.Guild.AudioClient == null || Context.Guild.AudioClient.ConnectionState != ConnectionState.Connected)
-            {
-                // We aren't connected. But if the user is in a channel auto connect
-                var user = Context.User as SocketGuildUser;
-                if (user?.VoiceChannel != null)
-                {
-                    await JoinAsync(user.VoiceChannel);
-                }
-                // Else we fail out
-                else
-                {
-                    await Context.Channel.SendMessageAsync(
-                        "I'm not in a voice channel and neither are you! Please join one and re-run the command.");
-                }
-                // Then continue if connected
-
-                await _musicPlayer.SkipAudio(Context.Guild.Id, Context.Channel);
-            }
-
-        }
-
         [Command("play", RunMode = RunMode.Async)]
         [Summary("Adds a song to the play queue")]
         public async Task PlayAsync([Remainder] [Summary("The URL to play.")] string uri)
