@@ -103,7 +103,7 @@ namespace Cecilia_NET.Services
                         // Remove queue counter at the end of fields
                         activeEmbed.Fields.RemoveAt(activeEmbed.Fields.Count - 1);
                         // Send
-                        await channel.SendMessageAsync("", false, activeEmbed.Build());
+                        var message = await channel.SendMessageAsync("", false, activeEmbed.Build());
                         // Stream and await till finish
                         while (true)
                         {
@@ -132,6 +132,10 @@ namespace Cecilia_NET.Services
                                 throw;
                             }
                         }
+
+                        // Delete now-playing as it is now out of date
+                        await channel.DeleteMessageAsync(message.Id);
+
                         // Flush buffer
                         discord?.FlushAsync().Wait();
                         

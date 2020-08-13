@@ -18,6 +18,7 @@ namespace Cecilia_NET.Modules
         {
             _musicPlayer = player;
         }
+
         
         [Command("join",RunMode = RunMode.Async)]
         [Summary("Joins the voice channel of the user. Alternatively pass in a channel with a ref")]
@@ -126,6 +127,9 @@ namespace Cecilia_NET.Modules
                 }
             }
 
+            // Delete user command
+            await Context.Channel.DeleteMessageAsync(Context.Message.Id);
+
             // 3. Add to queue
             EmbedBuilder builder = new EmbedBuilder();
             _musicPlayer.AddSongToQueue(Context.Guild.Id,$"AudioCache/{video.Title}.mp3",video, ref builder);
@@ -143,7 +147,8 @@ namespace Cecilia_NET.Modules
         {
             Console.WriteLine("Skip requested!");
             _musicPlayer.ActiveAudioClients[Context.Guild.Id].Skip = true;
-            await Context.Channel.SendMessageAsync("Skipping song!");
+            var message = await Context.Channel.SendMessageAsync("Skipping song!");
+            await Context.Channel.DeleteMessageAsync(Context.Message.Id);
         }
 
         [Command("pause", RunMode = RunMode.Async)]
