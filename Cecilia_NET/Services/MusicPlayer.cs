@@ -111,7 +111,11 @@ namespace Cecilia_NET.Services
                         while (true)
                         {
                             // Stream is over, broken, or skip requested
-                            if (ffmpeg.HasExited || discord == null || activeClient.Skip) break;
+                            if (ffmpeg.HasExited || discord == null || activeClient.Skip)
+                            {
+                                ffmpeg.Close();
+                                break;
+                            }
                             
                             // Pause function while not playing
                             if (activeClient.Paused) continue;
@@ -144,6 +148,7 @@ namespace Cecilia_NET.Services
 
                         // Flush buffer
                         discord?.FlushAsync().Wait();
+
                         
                         // Reset skip trigger
                         activeClient.Skip = false;
