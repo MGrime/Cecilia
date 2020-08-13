@@ -30,13 +30,13 @@ namespace Cecilia_NET.Modules
         public async Task JoinAsync(IVoiceChannel channel = null)
         {
             // Check for pre-existing connection
+            var response = Helpers.CeciliaEmbed(Context);
             if (Context.Guild.AudioClient != null && Context.Guild.AudioClient.ConnectionState != ConnectionState.Disconnected)
             {
-                await Context.Channel.SendMessageAsync(
-                    "I'm already connected! Drag me to a different room if you want to switch.");
+                response.AddField("I'm already connected!", "Drag me to a different room if you want to switch.");
+                await Context.Channel.SendMessageAsync("",false,response.Build());
                 // Delete the user command
                 Helpers.DeleteUserCommand(Context);
-
                 return;
             }
             
@@ -50,9 +50,9 @@ namespace Cecilia_NET.Modules
             // Here null means no channel specified and no user is not in a channel
             if (channel == null)
             {
-                await Context.Channel.SendMessageAsync(
-                    "Please first join a channel! Alternatively specify a valid channel as an argument");
-                // Delete the user command
+                response.AddField("Please first join a channel! ", "Alternatively specify a valid channel as an argument.");
+                await Context.Channel.SendMessageAsync("",false,response.Build());
+                    // Delete the user command
                 Helpers.DeleteUserCommand(Context);
 
                 return;
@@ -64,7 +64,8 @@ namespace Cecilia_NET.Modules
             _musicPlayer.RegisterAudioClient(Context.Guild.Id,client);
 
             // Display connection message
-            await Context.Channel.SendMessageAsync("I've connected! Thanks for inviting me, " + Helpers.GetDisplayName(Context.User) + "!");
+            response.AddField("I've Connected!", "Thanks for inviting me!",true);
+            await Context.Channel.SendMessageAsync("",false,response.Build());
 
             // Delete the user command
             Helpers.DeleteUserCommand(Context);
@@ -105,7 +106,9 @@ namespace Cecilia_NET.Modules
             }
             
             // Now we have disconnected
-            await Context.Channel.SendMessageAsync("I'm off! Cya next time! (Removed by " + Helpers.GetDisplayName(Context.User) + ")");
+            var response = Helpers.CeciliaEmbed(Context);
+            response.AddField("I'm off!", "See you next time!");
+            await Context.Channel.SendMessageAsync("",false,response.Build());
         }
 
         [Command("play", RunMode = RunMode.Async)]
@@ -124,8 +127,10 @@ namespace Cecilia_NET.Modules
                 // Else we fail out
                 else
                 {
-                    await Context.Channel.SendMessageAsync(
-                        "I'm not in a voice channel and neither are you! Please join one and re-run the command.");
+                    var response = Helpers.CeciliaEmbed(Context);
+                    response.AddField("I'm not connected!", "Join a voice channel and re-run the command.");
+                    await Context.Channel.SendMessageAsync("", false, response.Build());
+
                 }
                 // Then continue if connected
             }
@@ -208,7 +213,16 @@ namespace Cecilia_NET.Modules
             // Set skip boolean
             _musicPlayer.ActiveAudioClients[Context.Guild.Id].Skip = true;
             // Output skipping song message
-            await Context.Channel.SendMessageAsync("Skipping song! (Requested by " + Helpers.GetDisplayName(Context.User) + ")");
+            var response = Helpers.CeciliaEmbed(Context);
+            if (_musicPlayer.ActiveAudioClients[Context.Guild.Id]?.Queue.Count > 1)
+            {
+                response.AddField("Skipping Song!", "Onto the next one...");
+            }
+            else
+            {
+                response.AddField("Skipping Song!", "Spin up some more with the play command!");
+            }
+            await Context.Channel.SendMessageAsync("", false, response.Build());
             // Delete the user command
             Helpers.DeleteUserCommand(Context);
         }
@@ -225,7 +239,9 @@ namespace Cecilia_NET.Modules
                 // Set paused boolean
                 _musicPlayer.ActiveAudioClients[Context.Guild.Id].Paused = true;
                 // output paused message
-                await Context.Channel.SendMessageAsync("Pausing playback! (Requested by " + Helpers.GetDisplayName(Context.User) + ")");
+                var response = Helpers.CeciliaEmbed(Context);
+                response.AddField("Pausing playback!", "Take a break and recharge!");
+                await Context.Channel.SendMessageAsync("", false, response.Build());
                 // Delete the user command
                 Helpers.DeleteUserCommand(Context);
             }
@@ -243,7 +259,9 @@ namespace Cecilia_NET.Modules
                 // Unset pause boolean
                 _musicPlayer.ActiveAudioClients[Context.Guild.Id].Paused = false;
                 // Send message
-                await Context.Channel.SendMessageAsync("Resuming playback! (Requested by " + Helpers.GetDisplayName(Context.User) + ")");
+                var response = Helpers.CeciliaEmbed(Context);
+                response.AddField("Resuming playback!", "Here come the bangers!");
+                await Context.Channel.SendMessageAsync("", false, response.Build());
                 // Delete the user command
                 Helpers.DeleteUserCommand(Context);
             }
@@ -269,8 +287,7 @@ namespace Cecilia_NET.Modules
                 audioClient.Queue.Count == 0)
             {
                 // Say no queue and leave
-                embedBuilder.WithTitle("The queue is empty!");
-                embedBuilder.AddField(":-(", $"Add some songs with the play command!");
+                embedBuilder.AddField("The queue is empty!", "Add some songs with the play command!");
 
                 await Context.Channel.SendMessageAsync("", false, embedBuilder.Build());
                 
@@ -289,10 +306,10 @@ namespace Cecilia_NET.Modules
                 var video = item.Item2;
                 
                 string fieldValue = "";
-                fieldValue += video.Title;    // Add the title
                 fieldValue += " Length: " + video.Duration.Minutes + ":" + video.Duration.Seconds;
+                fieldValue += $" [View on YT]({video.Url})";
                 
-                embedBuilder.AddField($"{queuePosition.ToString()} ", fieldValue, false);
+                embedBuilder.AddField($"{queuePosition}: {video.Title}" , fieldValue);
                 ++queuePosition;
                 // Max queue embed size
                 if (queuePosition == Helpers.MAX_FIELD_IN_EMBED)

@@ -1,3 +1,4 @@
+using System;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
@@ -63,7 +64,7 @@ namespace Cecilia_NET
         {
             var outBuilder = new EmbedBuilder();
             outBuilder.WithAuthor(context.Client.CurrentUser.Username, context.Client.CurrentUser.GetAvatarUrl());
-            outBuilder.WithFooter($"Requested by {Helpers.GetDisplayName(context.User)}");
+            outBuilder.WithFooter($"Requested by {GetDisplayName(context.User)} @ {DateTime.Now.Hour}:{DateTime.Now.Minute}");
             return outBuilder;
         }
     }
