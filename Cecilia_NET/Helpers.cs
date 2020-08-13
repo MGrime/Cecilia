@@ -1,3 +1,4 @@
+using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 
@@ -20,11 +21,13 @@ namespace Cecilia_NET
             }
         }
 
+        // Delete the message that sent the command
         public static async void DeleteUserCommand(SocketCommandContext context)
         {
             await context.Channel.DeleteMessageAsync(context.Message.Id);
         }
-
+    
+        // Remove characters that could break filenames & paths
         public static string ProcessVideoTitle(string videoTitle)
         {
             const char replacementChar = '-';
@@ -49,6 +52,16 @@ namespace Cecilia_NET
             output = output.Replace('|', replacementChar);
 
             return output;
+        }
+        
+        // Provide a shell embed builder with cecilia branding and requesting user
+        // Adds the author and footer
+        public static EmbedBuilder CeciliaEmbed(SocketCommandContext context)
+        {
+            var outBuilder = new EmbedBuilder();
+            outBuilder.WithAuthor(context.Client.CurrentUser.Username, context.Client.CurrentUser.GetAvatarUrl());
+            outBuilder.WithFooter($"Requested by {Helpers.GetDisplayName(context.User)}");
+            return outBuilder;
         }
     }
 }

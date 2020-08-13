@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -239,6 +240,36 @@ namespace Cecilia_NET.Modules
                 // Send message
                 await Context.Channel.SendMessageAsync("Resuming playback! (Requested by " + Helpers.GetDisplayName(Context.User) + ")");
                 // Delete the user command
+                Helpers.DeleteUserCommand(Context);
+            }
+        }
+
+        [Command("queue", RunMode = RunMode.Async)]
+        [Summary("List the queued songs")]
+        public async Task QueueAsync()
+        {
+            // Get the client for this server
+            MusicPlayer.WrappedAudioClient audioClient;
+            try
+            {
+                audioClient = _musicPlayer.ActiveAudioClients[Context.Guild.Id];
+            }
+            catch (KeyNotFoundException e)
+            {
+                audioClient = null;
+            }
+            // If there is no connection, or we are disconnected, or there is no queue
+            if (audioClient == null || audioClient.Client.ConnectionState == ConnectionState.Disconnected ||
+                audioClient.Queue.Count == 0)
+            {
+                // Say no queue and leave
+                var embedBuilder = Helpers.CeciliaEmbed(Context);
+                embedBuilder.WithTitle("The queue is empty!");
+                embedBuilder.AddField(":-(", $"Add some songs with the play command!");
+
+                await Context.Channel.SendMessageAsync("", false, embedBuilder.Build());
+                
+                // Delete message
                 Helpers.DeleteUserCommand(Context);
             }
         }
