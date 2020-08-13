@@ -109,7 +109,17 @@ namespace Cecilia_NET.Modules
                 // Then continue if connected
             }
 
-            var directoryPrefix = "AudioCache/";
+            string directoryPrefix;
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                directoryPrefix = @"AudioCache\";
+            }
+            else
+            {
+                directoryPrefix = "AudioCache/";
+            }
+            
 
             // Start youtube explode
             var youtube = new YoutubeClient();

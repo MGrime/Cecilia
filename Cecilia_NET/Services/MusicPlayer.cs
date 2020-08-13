@@ -186,7 +186,25 @@ namespace Cecilia_NET.Services
                         if (!found)
                         {
                             output.Close();
-                            System.IO.File.Delete(filePath);
+
+                            try
+                            {
+                                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                                {
+                                    string fullPath = Directory.GetCurrentDirectory() + @"\" + filePath;
+
+                                    System.IO.File.Delete(fullPath);
+                                }
+                                else
+                                {
+                                    System.IO.File.Delete(filePath);
+                                }
+                                
+                            }
+                            catch (Exception e)
+                            {
+                                Console.WriteLine(e);
+                            }
                         }
 
 
