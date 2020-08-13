@@ -3,7 +3,7 @@
 
 ## What is Cecilia?
 
-Cecilia aims to be a versitile and easy to use Discord Music Bot. Currently in this early stage of development it supports playback of music from Youtube, through both direct links and searches, however extra services will be added as development progresses.
+Cecilia aims to be a versitile and easy to use Discord Music Bot. It is a self-hosted bot meaning you must provide the server that will run the bot through your own bot application. Currently in this early stage of development it supports playback of music from Youtube, through both direct links and searches, however extra services will be added as development progresses.
 
 ## Completed Features
 
@@ -22,11 +22,14 @@ Cecilia aims to be a versitile and easy to use Discord Music Bot. Currently in t
 * Discord Rich Presence integration.
 * Limit skipping & leaving to user who requested the current song.
 * Web interface for management.
+* Removing from queue.
 
 ## How To Use
 
 The two methods to run Cecilia are either through a stable binary from the Releases tab or by forking the code and compiling the DLL yourself.
 Cecilia is built on top of .NET Core which is cross-platform however, the currently supported platforms are Windows and Linux. You may attempt to run the DLL on any platform that supports the .NET Core SDK however, this is done at your own risk as we do not test for these platforms.
+
+Before downloading the binary you must create a bot application and add it to the server you wish to run Cecilia in. The steps for these can be found [here](https://discord.foxbot.me/stable/guides/getting_started/first-bot.html). Follow the first section "Creating a Discord Bot" to create a bot application and add it to your server, you can ignore the rest of the instructions.
 
 ### Downloading the Binary
 
@@ -34,13 +37,15 @@ Cecilia is built on top of .NET Core which is cross-platform however, the curren
 
 1. Download a release from the Releases tab and extract to your running folder.
 2. Install FFMPEG and add to the system path, Sodium and Opus and place the Sodium and Opus DLLs in the same directory as the downloaded binary.
-3. Execute Cecilia_NET.dll using .NET Core through a Command Prompt or Powershell.
+3. Place the token for your bot application in a file "token.txt" in the same directory you extracted the release to.
+4. Execute Cecilia_NET.dll using .NET Core through a Command Prompt or Powershell.
 
 #### Linux
 
 1. Download a release from the Releases tab and extract to your running folder.
 2. Install FFMPEG, Sodium and Opus through your distribution's package manager.
-3. Execute Cecilia_NET.dll binary using .NET Core in your terminal emulator.
+3. Place the token for your bot application in a file "token.txt" in the same directory you extracted the release to.
+4. Execute Cecilia_NET.dll binary using .NET Core in your terminal emulator.
 
 ### Compilation
 

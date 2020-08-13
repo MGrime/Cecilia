@@ -225,7 +225,7 @@ namespace Cecilia_NET.Modules
             }
             else
             {
-                response.AddField("Skipping Song!", "Spin up some more with the play command!");
+                response.AddField("Skipping Song!", "Spin up some more songs with the play command!");
             }
             await Context.Channel.SendMessageAsync("", false, response.Build());
             // Delete the user command

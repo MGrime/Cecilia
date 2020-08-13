@@ -233,6 +233,10 @@ namespace Cecilia_NET.Services
                         await activeClient.Client.SetSpeakingAsync(false);
                     }
                 }
+
+                var response = Helpers.CeciliaEmbed(context);
+                response.AddField("That's all folks!", "Spin up some more songs with the play command!");
+                await context.Channel.SendMessageAsync("", false, response.Build());
             }
         }
 
