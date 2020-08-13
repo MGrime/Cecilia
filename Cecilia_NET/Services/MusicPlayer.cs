@@ -15,20 +15,21 @@ namespace Cecilia_NET.Services
 {
     public class MusicPlayer
     {
-        private Process _ffmpeg;
-        private Stream _output;
+        private Process _ffmpeg; // The process for the FFMPEG library
 
-        public MusicPlayer()
+        private Stream _output; // The FFMPEG library ouput stream
+
+        public MusicPlayer() // Constructor
         {
             _activeAudioClients = new Dictionary<ulong, WrappedAudioClient>();
         }
 
-        public void CloseFileStreams()
+        public void CloseFileStreams() // Closes FFMPEG, releasing file locks
         {
-            if (_ffmpeg != null && _output != null)
+            if (_ffmpeg != null && _output != null) // If the process and output are null
             {
-                _ffmpeg.Close();
-                _output.Close();
+                _output.Close(); // Close the output first
+                _ffmpeg.Close(); // Then close the process
             }
             else
             {
@@ -129,7 +130,7 @@ namespace Cecilia_NET.Services
                             // Stream is over, broken, or skip requested
                             if (_ffmpeg.HasExited || discord == null || activeClient.Skip)
                             {
-                                _ffmpeg.Close();
+                                CloseFileStreams();
                                 break;
                             }
                             
@@ -202,8 +203,6 @@ namespace Cecilia_NET.Services
                         // If this is still false all queues have been check and it isnt there
                         if (!found)
                         {
-                            // Make sure fully done before deletion
-                            _output.Close();
                             // Catch windows requirement for File.Delete
                             try
                             {
