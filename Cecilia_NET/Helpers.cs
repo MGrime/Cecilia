@@ -64,7 +64,8 @@ namespace Cecilia_NET
         {
             var outBuilder = new EmbedBuilder();
             outBuilder.WithAuthor(context.Client.CurrentUser.Username, context.Client.CurrentUser.GetAvatarUrl());
-            outBuilder.WithFooter($"Requested by {GetDisplayName(context.User)} @ {DateTime.Now.Hour}:{DateTime.Now.Minute}");
+            var correctedMinutes = DateTime.Now.Minute <= 9 ? $"0{DateTime.Now.Minute}" : DateTime.Now.Minute.ToString();
+            outBuilder.WithFooter($"Requested by {GetDisplayName(context.User)} @ {DateTime.Now.Hour}:{correctedMinutes}");
             return outBuilder;
         }
     }

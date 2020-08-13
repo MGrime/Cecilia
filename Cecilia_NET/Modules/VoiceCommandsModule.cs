@@ -116,6 +116,7 @@ namespace Cecilia_NET.Modules
         public async Task PlayAsync([Remainder] [Summary("The URL to play.")] string uri)
         {
             // Check if connected to voice
+            var response = Helpers.CeciliaEmbed(Context);
             if (Context.Guild.AudioClient == null || Context.Guild.AudioClient.ConnectionState != ConnectionState.Connected)
             {
                 // We aren't connected. But if the user is in a channel auto connect
@@ -127,13 +128,22 @@ namespace Cecilia_NET.Modules
                 // Else we fail out
                 else
                 {
-                    var response = Helpers.CeciliaEmbed(Context);
                     response.AddField("I'm not connected!", "Join a voice channel and re-run the command.");
                     await Context.Channel.SendMessageAsync("", false, response.Build());
 
                 }
                 // Then continue if connected
             }
+            
+            // Delete user command if not deleted by join
+            if (Context.Channel.GetMessageAsync(Context.Message.Id).Result != null)
+            {
+                Helpers.DeleteUserCommand(Context);
+            }
+            
+            // Send a searching embed
+            response.AddField("Searching...", "Give me a minute to look that up!");
+            var searchEmbed = await Context.Channel.SendMessageAsync("",false,response.Build());
 
             // Calculate correct directory prefix for different OS
             var directoryPrefix = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? @"AudioCache\" : "AudioCache/";
@@ -186,14 +196,9 @@ namespace Cecilia_NET.Modules
                     await youtube.Videos.Streams.DownloadAsync(streamInfo, $"{directoryPrefix}{processedTitle}.mp3");
                 }
             }
-
-            // Delete user command if not deleted by join
-            if (Context.Channel.GetMessageAsync(Context.Message.Id).Result != null)
-            {
-                Helpers.DeleteUserCommand(Context);
-            }
-
+            
             // 3. Add to queue
+            await Context.Channel.DeleteMessageAsync(searchEmbed.Id);
             EmbedBuilder builder = new EmbedBuilder();
             _musicPlayer.AddSongToQueue(Context,$"{directoryPrefix}{processedTitle}.mp3",video, ref builder);
 
@@ -306,7 +311,10 @@ namespace Cecilia_NET.Modules
                 var video = item.Item2;
                 
                 string fieldValue = "";
-                fieldValue += " Length: " + video.Duration.Minutes + ":" + video.Duration.Seconds;
+                var correctedSeconds = video.Duration.Seconds <= 9
+                    ? $"0{video.Duration.Seconds}"
+                    : video.Duration.Seconds.ToString();
+                fieldValue += " Length: " + video.Duration.Minutes + ":" + correctedSeconds;
                 fieldValue += $" [View on YT]({video.Url})";
                 
                 embedBuilder.AddField($"{queuePosition}: {video.Title}" , fieldValue);
