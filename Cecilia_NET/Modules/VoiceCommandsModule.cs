@@ -109,8 +109,6 @@ namespace Cecilia_NET.Modules
                 // Then continue if connected
             }
 
-            var directoryPrefix = "AudioCache/";
-
             // Start youtube explode
             var youtube = new YoutubeClient();
             // Get video metadata & download thumbnail
@@ -122,7 +120,7 @@ namespace Cecilia_NET.Modules
             // TODO: This sucks. Make it more efficient - Michael
 
             bool fileExists = false;
-            foreach (var file in Directory.GetFiles(directoryPrefix))
+            foreach (var file in Directory.GetFiles(Directory.GetCurrentDirectory()))
             {
                 if (file == $"{processedTitle}.mp3")
                 {
@@ -141,7 +139,7 @@ namespace Cecilia_NET.Modules
                 if (streamInfo != null)
                 {
                     // Download
-                    await youtube.Videos.Streams.DownloadAsync(streamInfo, $"{directoryPrefix}{processedTitle}.mp3");
+                    await youtube.Videos.Streams.DownloadAsync(streamInfo, $"{processedTitle}.mp3");
                 }
             }
 
@@ -153,7 +151,7 @@ namespace Cecilia_NET.Modules
 
             // 3. Add to queue
             EmbedBuilder builder = new EmbedBuilder();
-            _musicPlayer.AddSongToQueue(Context,$"{directoryPrefix}{processedTitle}.mp3",video, ref builder);
+            _musicPlayer.AddSongToQueue(Context,$"{processedTitle}.mp3",video, ref builder);
 
             // 4. Notify added
             await Context.Channel.SendMessageAsync("", false, builder.Build());

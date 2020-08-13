@@ -40,11 +40,6 @@ namespace Cecilia_NET
                     }
                 }
             }
-
-            if (!Directory.Exists("AudioCache"))
-            {
-                System.IO.Directory.CreateDirectory("AudioCache");
-            }
             
             // Transfer to async
             // Catching all exceptions that reach here just to clean up then close
