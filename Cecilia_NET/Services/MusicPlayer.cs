@@ -58,7 +58,7 @@ namespace Cecilia_NET.Services
             activeEmbed.WithAuthor(context.Client.CurrentUser.Username, context.Client.CurrentUser.GetAvatarUrl());
             activeEmbed.WithImageUrl(videoData.Thumbnails.MediumResUrl);
             activeEmbed.WithTitle("Added song!");// This can be switched later
-            activeEmbed.AddField("Title", videoData.Title);
+            activeEmbed.AddField("Title",$"[{videoData.Title}]({videoData.Url})");
             activeEmbed.AddField("Length", videoData.Duration.Minutes + " min " + videoData.Duration.Seconds + " secs");
             activeEmbed.AddField("Uploader", videoData.Author);
             activeEmbed.AddField("Queue Position", _activeAudioClients[context.Guild.Id].Queue.Count);
@@ -131,7 +131,10 @@ namespace Cecilia_NET.Services
                             }
                             catch (Exception e)
                             {
-                                Console.WriteLine(e);
+                                // Delete now-playing as it is now out of date
+                                await context.Channel.DeleteMessageAsync(message.Id);
+                                // Flush buffer
+                                discord?.FlushAsync().Wait();
                                 throw;
                             }
                         }

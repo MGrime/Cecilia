@@ -31,9 +31,11 @@ namespace Cecilia_NET.Modules
             // Title is the users username
             embedBuilder.WithTitle(user.Username);
             // Image is profile pic
-            embedBuilder.AddField("Profile Pic", guildUser.GetAvatarUrl());
+            embedBuilder.WithImageUrl(guildUser.GetAvatarUrl());
             // Output nickname if they have one
             embedBuilder.AddField("Name", Helpers.GetDisplayName(Context.User) );
+            // Footer with requester
+            embedBuilder.WithFooter($"Requested by {Helpers.GetDisplayName(Context.User)}");
 
             await Context.Channel.SendMessageAsync("",false,embedBuilder.Build());
             // Delete sending message

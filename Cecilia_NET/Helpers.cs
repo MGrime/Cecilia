@@ -20,7 +20,7 @@ namespace Cecilia_NET
             }
         }
 
-        public async static void DeleteUserCommand(SocketCommandContext context)
+        public static async void DeleteUserCommand(SocketCommandContext context)
         {
             await context.Channel.DeleteMessageAsync(context.Message.Id);
         }
