@@ -1,5 +1,5 @@
 ![Image of Splash Art](https://github.com/MGrime/Cecilia/blob/master/Images/Small%20Brand%20With%20Smile.png)
-# A Music Discord bot written in C# and Discord.NET
+# A Discord Music bot written in C# and Discord.NET
 
 ## What is Cecilia?
 
