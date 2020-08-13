@@ -62,7 +62,7 @@ namespace Cecilia_NET.Services
             activeEmbed.AddField("Length", videoData.Duration.Minutes + " min " + videoData.Duration.Seconds + " secs");
             activeEmbed.AddField("Uploader", videoData.Author);
             activeEmbed.AddField("Queue Position", _activeAudioClients[context.Guild.Id].Queue.Count);
-            activeEmbed.WithFooter($"Requested by {context.User.Username}");
+            activeEmbed.WithFooter($"Requested by {Helpers.GetDisplayName(context.User)}");
 
             // Pass back
             addedEmbed = activeEmbed;
