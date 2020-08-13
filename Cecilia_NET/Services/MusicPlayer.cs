@@ -159,6 +159,7 @@ namespace Cecilia_NET.Services
                         // Check queue. If same song is queued do not delete file
                         // TODO: THIS MIGHT BREAK IF MULTIPLE SERVERS QUEUE THE SAME SONG AT THE SAME TIME SO COME LOOK AT THIS WHEN YOU CAN BE BOTHERED
                         var found = false;
+                        // Check all active queues
                         foreach (var client in ActiveAudioClients)
                         {
                             if (client.Value.Queue.Count != 0)
@@ -166,17 +167,19 @@ namespace Cecilia_NET.Services
                                 // Check file before cont
                                 // Stops file deleting if same song is multi queued
                                 // TODO: This sucks. make it more efficient - Michael
-                               
+                               // Check each item in this queue
                                 foreach (var queueItem in activeClient.Queue)
                                 {
+                                    // If we find the song in queue
                                     if (queueItem.Item1.Equals(filePath))
                                     {
+                                        // Mark for no delete
                                         found = true;
                                         break;
                                     }
                                 }
                             }
-
+                            // We have found it, dont look through other queues
                             if (found)
                             {
                                 break;
@@ -185,8 +188,9 @@ namespace Cecilia_NET.Services
                         // If this is still false all queues have been check and it isnt there
                         if (!found)
                         {
+                            // Make sure fully done before deletion
                             output.Close();
-
+                            // Catch windows requirement for File.Delete
                             try
                             {
                                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -209,7 +213,10 @@ namespace Cecilia_NET.Services
 
 
                         // No more songs so exit
-                        activeClient.Playing = false;
+                        if (activeClient.Queue.Count == 0)
+                        {
+                            activeClient.Playing = false;
+                        }
                         await activeClient.Client.SetSpeakingAsync(false);
                     }
                 }

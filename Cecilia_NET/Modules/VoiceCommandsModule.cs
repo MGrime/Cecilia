@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
@@ -8,7 +9,9 @@ using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using YoutubeExplode;
+using YoutubeExplode.Videos;
 using YoutubeExplode.Videos.Streams;
+using YouTubeSearch;
 
 
 namespace Cecilia_NET.Modules
@@ -80,8 +83,20 @@ namespace Cecilia_NET.Modules
             // There is a connect in this guild
             // Disconnect
             await Context.Guild.AudioClient.StopAsync();
-            
             _musicPlayer.RemoveAudioClient(Context.Guild.Id);
+            
+            // Cleanup audio cache
+            // If there are no active clients
+            if (_musicPlayer.ActiveAudioClients.Count == 0)
+            {
+                // Get correct directory
+                var directoryPrefix = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? @"AudioCache\" : "AudioCache/";
+                // Clear it
+                foreach (var file in Directory.GetFiles(directoryPrefix))
+                {
+                    File.Delete(file);
+                }
+            }
             
             // Now we have disconnected
             await Context.Channel.SendMessageAsync("I'm off! Cya next time! (Removed by " + Helpers.GetDisplayName(Context.User) + ")");
@@ -109,28 +124,34 @@ namespace Cecilia_NET.Modules
                 // Then continue if connected
             }
 
-            string directoryPrefix;
-
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                directoryPrefix = @"AudioCache\";
-            }
-            else
-            {
-                directoryPrefix = "AudioCache/";
-            }
+            // Calculate correct directory prefix for different OS
+            var directoryPrefix = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? @"AudioCache\" : "AudioCache/";
             
-
             // Start youtube explode
             var youtube = new YoutubeClient();
             // Get video metadata & download thumbnail
-            var video = await youtube.Videos.GetAsync(uri);
+            Video video;
+            try
+            {
+                video = await youtube.Videos.GetAsync(uri);
+            }
+            catch(ArgumentException e)
+            {
+                // This means that it is not a uri it is a search term.
+                // So search videos
+                var items = new VideoSearch();
+                // Get the first page of videos
+                var videos = await items.GetVideos(uri, 1);
+                // find the top one
+                var topVideo = videos.First();
+                video = await youtube.Videos.GetAsync(topVideo.getUrl());
+            }
+            
             // Process correct title
             var processedTitle = Helpers.ProcessVideoTitle(video.Title);
             
-            // Check if file exists. If it does skip the download#
+            // Check if file exists. If it does skip the download
             // TODO: This sucks. Make it more efficient - Michael
-
             bool fileExists = false;
             foreach (var file in Directory.GetFiles(directoryPrefix))
             {
@@ -176,10 +197,12 @@ namespace Cecilia_NET.Modules
         [Summary("Skips current song")]
         public async Task SkipAsync()
         {
+            // Log skip
             Console.WriteLine("Skip requested!");
+            // Set skip boolean
             _musicPlayer.ActiveAudioClients[Context.Guild.Id].Skip = true;
-            var message = await Context.Channel.SendMessageAsync("Skipping song! (Requested by " + Helpers.GetDisplayName(Context.User) + ")");
-
+            // Output skipping song message
+            await Context.Channel.SendMessageAsync("Skipping song! (Requested by " + Helpers.GetDisplayName(Context.User) + ")");
             // Delete the user command
             Helpers.DeleteUserCommand(Context);
         }
@@ -188,12 +211,15 @@ namespace Cecilia_NET.Modules
         [Summary("Pauses playback")]
         public async Task PauseAsync()
         {
+            // Check we aren't already paused
             if (!_musicPlayer.ActiveAudioClients[Context.Guild.Id].Paused)
             {
+                // Log
                 Console.WriteLine("Pause requested!");
+                // Set paused boolean
                 _musicPlayer.ActiveAudioClients[Context.Guild.Id].Paused = true;
+                // output paused message
                 await Context.Channel.SendMessageAsync("Pausing playback! (Requested by " + Helpers.GetDisplayName(Context.User) + ")");
-
                 // Delete the user command
                 Helpers.DeleteUserCommand(Context);
             }
@@ -203,12 +229,15 @@ namespace Cecilia_NET.Modules
         [Summary("Resumes playback")]
         public async Task ResumeAsync()
         {
+            // Check we are paused
             if (_musicPlayer.ActiveAudioClients[Context.Guild.Id].Paused)
             {
+                // Log
                 Console.WriteLine("Resume requested!");
+                // Unset pause boolean
                 _musicPlayer.ActiveAudioClients[Context.Guild.Id].Paused = false;
+                // Send message
                 await Context.Channel.SendMessageAsync("Resuming playback! (Requested by " + Helpers.GetDisplayName(Context.User) + ")");
-
                 // Delete the user command
                 Helpers.DeleteUserCommand(Context);
             }
