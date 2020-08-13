@@ -7,6 +7,9 @@ namespace Cecilia_NET
     // Collection of functions that don't fit into class
     public static class Helpers
     {
+        // THIS COMES FROM THE DISCORD API
+        public const int MAX_FIELD_IN_EMBED = 25;
+        
         // Gets a display name. Username if the user doesnt have a nickname in the guild they are running the command in. Else nickname
         public static string GetDisplayName(SocketUser user)
         {

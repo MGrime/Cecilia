@@ -13,6 +13,7 @@ using YoutubeExplode;
 using YoutubeExplode.Videos;
 using YoutubeExplode.Videos.Streams;
 using YouTubeSearch;
+using Embed = Discord.Embed;
 
 
 namespace Cecilia_NET.Modules
@@ -259,11 +260,11 @@ namespace Cecilia_NET.Modules
                 audioClient = null;
             }
             // If there is no connection, or we are disconnected, or there is no queue
+            var embedBuilder = Helpers.CeciliaEmbed(Context);
             if (audioClient == null || audioClient.Client.ConnectionState == ConnectionState.Disconnected ||
                 audioClient.Queue.Count == 0)
             {
                 // Say no queue and leave
-                var embedBuilder = Helpers.CeciliaEmbed(Context);
                 embedBuilder.WithTitle("The queue is empty!");
                 embedBuilder.AddField(":-(", $"Add some songs with the play command!");
 
@@ -271,7 +272,34 @@ namespace Cecilia_NET.Modules
                 
                 // Delete message
                 Helpers.DeleteUserCommand(Context);
+
+                return;
             }
+            
+            // There is a connection & queue
+            int queuePosition = 1;
+            embedBuilder.WithTitle($"Current Queue (Up to {Helpers.MAX_FIELD_IN_EMBED})");
+            foreach (var item in audioClient.Queue)
+            {
+                // building explicitly due to size for readability
+                var video = item.Item2;
+                
+                string fieldValue = "";
+                fieldValue += video.Title;    // Add the title
+                fieldValue += " Length: " + video.Duration.Minutes + ":" + video.Duration.Seconds;
+                
+                embedBuilder.AddField($"{queuePosition.ToString()} ", fieldValue, false);
+                ++queuePosition;
+                // Max queue embed size
+                if (queuePosition == Helpers.MAX_FIELD_IN_EMBED)
+                {
+                    break;
+                }
+            }
+            
+            await Context.Channel.SendMessageAsync("", false, embedBuilder.Build());
+            // Delete message
+            Helpers.DeleteUserCommand(Context);
         }
 
         private readonly MusicPlayer _musicPlayer;

@@ -49,14 +49,14 @@ namespace Cecilia_NET.Services
             mutex.WaitOne(-1);
             Console.WriteLine("Adding to queue for guild: " + context.Guild.Id);
             // Add song to queue
-            _activeAudioClients[context.Guild.Id].Queue.AddLast(new Tuple<string, EmbedBuilder>(filePath,Helpers.CeciliaEmbed(context)));
+            _activeAudioClients[context.Guild.Id].Queue.AddLast(new Tuple<string,Video, EmbedBuilder>(filePath,videoData,Helpers.CeciliaEmbed(context)));
             // Release mutex
             Console.WriteLine("Added to queue for guild: " + context.Guild.Id);
             mutex.ReleaseMutex();
             
             // create embed
             // Caching so it can be modified for playing message
-            var activeEmbed = _activeAudioClients[context.Guild.Id].Queue.Last.Value.Item2;
+            var activeEmbed = _activeAudioClients[context.Guild.Id].Queue.Last.Value.Item3;
             activeEmbed.WithImageUrl(videoData.Thumbnails.MediumResUrl);
             activeEmbed.WithTitle("Added song!");// This can be switched later
             activeEmbed.AddField("Title",$"[{videoData.Title}]({videoData.Url})");
@@ -100,7 +100,7 @@ namespace Cecilia_NET.Services
                         await activeClient.Client.SetSpeakingAsync(true);
                         // Send playing message
                         // Modify embed
-                        var activeEmbed = activeClient.Queue.First.Value.Item2;
+                        var activeEmbed = activeClient.Queue.First.Value.Item3;
                         // Set playing title
                         activeEmbed.WithTitle("Now Playing!");
                         // Remove queue counter at the end of fields
@@ -239,7 +239,7 @@ namespace Cecilia_NET.Services
             private IAudioClient _client;
             
             // Queue and a mutex for accessing
-            private LinkedList<Tuple<string,EmbedBuilder>> _queue;
+            private LinkedList<Tuple<string,Video,EmbedBuilder>> _queue;
             private Mutex _mutex;
             
             // Control over playing
@@ -250,7 +250,7 @@ namespace Cecilia_NET.Services
             public WrappedAudioClient(IAudioClient client)
             {
                 _client = client;
-                _queue = new LinkedList<Tuple<string,EmbedBuilder>>();
+                _queue = new LinkedList<Tuple<string,Video,EmbedBuilder>>();
                 _playing = false;
                 _paused = false;
                 _skip = false;
@@ -263,7 +263,7 @@ namespace Cecilia_NET.Services
                 set => _client = value;
             }
 
-            public LinkedList<Tuple<string,EmbedBuilder>> Queue
+            public LinkedList<Tuple<string,Video,EmbedBuilder>> Queue
             {
                 get => _queue;
                 set => _queue = value;
