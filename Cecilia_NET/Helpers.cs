@@ -21,12 +21,26 @@ namespace Cecilia_NET
 
         public static string ProcessVideoTitle(string videoTitle)
         {
+            const char replacementChar = '-';
+
             // Remove forward slashes
-            var output = videoTitle.Replace('/', ' ');
+            var output = videoTitle.Replace('/', replacementChar);
             // remove back slashes
-            output = output.Replace('\\',' ');
-            // Remove all spaces
-            output = output.Replace(' ', '-');
+            output = output.Replace('\\', replacementChar);
+            // Remove all colons
+            output = output.Replace(':', replacementChar);
+            // Remove all asterisks
+            output = output.Replace('*', replacementChar);
+            // Remove all question marks
+            output = output.Replace('?', replacementChar);
+            // Remove all double quotes
+            output = output.Replace('\"', replacementChar);
+            // Remove all left chevrons
+            output = output.Replace('<', replacementChar);
+            // Remove all right chevrons
+            output = output.Replace('>', replacementChar);
+            // Remove all left graves
+            output = output.Replace('|', replacementChar);
 
             return output;
         }
