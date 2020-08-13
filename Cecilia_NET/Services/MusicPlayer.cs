@@ -55,6 +55,7 @@ namespace Cecilia_NET.Services
             // create embed
             // Caching so it can be modified for playing message
             var activeEmbed = _activeAudioClients[context.Guild.Id].Queue.Last.Value.Item2;
+            activeEmbed.WithAuthor(context.Client.CurrentUser.Username, context.Client.CurrentUser.GetAvatarUrl());
             activeEmbed.WithImageUrl(videoData.Thumbnails.MediumResUrl);
             activeEmbed.WithTitle("Added song!");// This can be switched later
             activeEmbed.AddField("Title", videoData.Title);
@@ -67,11 +68,11 @@ namespace Cecilia_NET.Services
             addedEmbed = activeEmbed;
         }
 
-        public async Task PlayAudio(ulong guildId, ISocketMessageChannel channel)
+        public async Task PlayAudio(SocketCommandContext context)
         {
             // TODO: add checks if this used outside of the add song command
             // Find correct client
-            var activeClient = _activeAudioClients[guildId];
+            var activeClient = _activeAudioClients[context.Guild.Id];
             if (activeClient != null)
             {
                 // Check if already playing audio
@@ -105,7 +106,7 @@ namespace Cecilia_NET.Services
                         // Remove queue counter at the end of fields
                         activeEmbed.Fields.RemoveAt(activeEmbed.Fields.Count - 1);
                         // Send
-                        var message = await channel.SendMessageAsync("", false, activeEmbed.Build());
+                        var message = await context.Channel.SendMessageAsync("", false, activeEmbed.Build());
                         // Stream and await till finish
                         while (true)
                         {
@@ -136,7 +137,7 @@ namespace Cecilia_NET.Services
                         }
 
                         // Delete now-playing as it is now out of date
-                        await channel.DeleteMessageAsync(message.Id);
+                        await context.Channel.DeleteMessageAsync(message.Id);
 
                         // Flush buffer
                         discord?.FlushAsync().Wait();
