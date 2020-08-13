@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Audio;
+using Discord.Commands;
 using Discord.WebSocket;
 using YoutubeExplode.Videos;
 
@@ -32,11 +33,11 @@ namespace Cecilia_NET.Services
             Console.WriteLine("Client removed!");
         }
 
-        public void AddSongToQueue(ulong guildId,string filePath,Video videoData, ref EmbedBuilder addedEmbed)
+        public void AddSongToQueue(SocketCommandContext context,string filePath,Video videoData, ref EmbedBuilder addedEmbed)
         {
             // THIS METHOD REQUIRES A MUTEX INCASE MULTIPLE SONGS ARE QUEUED UP IN QUICK SUCCESSION
             // Find the mutex for this queue
-            var mutex = _activeAudioClients[guildId].QueueMutex;
+            var mutex = _activeAudioClients[context.Guild.Id].QueueMutex;
             // Just make sure
             if (mutex == null)
             {
@@ -44,22 +45,23 @@ namespace Cecilia_NET.Services
             }
             // Wait for it to be free
             mutex.WaitOne(-1);
-            Console.WriteLine("Adding to queue for guild: " + guildId);
+            Console.WriteLine("Adding to queue for guild: " + context.Guild.Id);
             // Add song to queue
-            _activeAudioClients[guildId].Queue.AddLast(new Tuple<string, EmbedBuilder>(filePath,new EmbedBuilder()));
+            _activeAudioClients[context.Guild.Id].Queue.AddLast(new Tuple<string, EmbedBuilder>(filePath,new EmbedBuilder()));
             // Release mutex
-            Console.WriteLine("Added to queue for guild: " + guildId);
+            Console.WriteLine("Added to queue for guild: " + context.Guild.Id);
             mutex.ReleaseMutex();
             
             // create embed
             // Caching so it can be modified for playing message
-            var activeEmbed = _activeAudioClients[guildId].Queue.Last.Value.Item2;
+            var activeEmbed = _activeAudioClients[context.Guild.Id].Queue.Last.Value.Item2;
             activeEmbed.WithImageUrl(videoData.Thumbnails.MediumResUrl);
             activeEmbed.WithTitle("Added song!");// This can be switched later
             activeEmbed.AddField("Title", videoData.Title);
             activeEmbed.AddField("Length", videoData.Duration.Minutes + " min " + videoData.Duration.Seconds + " secs");
             activeEmbed.AddField("Uploader", videoData.Author);
-            activeEmbed.AddField("Queue Position", _activeAudioClients[guildId].Queue.Count);
+            activeEmbed.AddField("Queue Position", _activeAudioClients[context.Guild.Id].Queue.Count);
+            activeEmbed.WithFooter($"Requested by {context.User.Username}");
 
             // Pass back
             addedEmbed = activeEmbed;
