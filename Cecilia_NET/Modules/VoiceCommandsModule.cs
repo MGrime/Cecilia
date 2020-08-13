@@ -28,6 +28,8 @@ namespace Cecilia_NET.Modules
             {
                 await Context.Channel.SendMessageAsync(
                     "I'm already connected! Drag me to a different room if you want to switch.");
+                // Delete the user command
+                await Context.Channel.DeleteMessageAsync(Context.Message.Id);
                 return;
             }
             
@@ -43,6 +45,8 @@ namespace Cecilia_NET.Modules
             {
                 await Context.Channel.SendMessageAsync(
                     "Please first join a channel! Alternatively specify a valid channel as an argument");
+                // Delete the user command
+                await Context.Channel.DeleteMessageAsync(Context.Message.Id);
                 return;
             }
             
@@ -53,7 +57,7 @@ namespace Cecilia_NET.Modules
 
             // Display connection message
             await Context.Channel.SendMessageAsync("I've connected! Thanks for inviting me, " + Helpers.GetDisplayName(Context.User) + "!");
-
+            
             // Delete the user command
             await Context.Channel.DeleteMessageAsync(Context.Message.Id);
         }
@@ -62,6 +66,9 @@ namespace Cecilia_NET.Modules
         [Summary("Leaves the voice channel if we are connected to one")]
         public async Task LeaveAsync()
         {
+            // Delete the user command
+            await Context.Channel.DeleteMessageAsync(Context.Message.Id);
+            
             // Check for connection
             if (Context.Guild.AudioClient == null || Context.Guild.AudioClient.ConnectionState == ConnectionState.Disconnected)
             {
@@ -75,9 +82,6 @@ namespace Cecilia_NET.Modules
             
             // Now we have disconnected
             await Context.Channel.SendMessageAsync("I'm off! Cya next time! (Removed by " + Helpers.GetDisplayName(Context.User) + ")");
-
-            // Delete the user command
-            await Context.Channel.DeleteMessageAsync(Context.Message.Id);
         }
 
         [Command("play", RunMode = RunMode.Async)]
@@ -106,12 +110,15 @@ namespace Cecilia_NET.Modules
             var youtube = new YoutubeClient();
             // Get video metadata & download thumbnail
             var video = await youtube.Videos.GetAsync(uri);
+            // Process correct title
+            var processedTitle = Helpers.ProcessVideoTitle(video.Title);
+            
             // Check if file exists. If it does skip the download#
             // TODO: This sucks. Make it more efficient - Michael
             bool fileExists = false;
             foreach (var file in Directory.GetFiles("AudioCache/"))
             {
-                if (file == $"{video.Title}.mp3")
+                if (file == $"{processedTitle}.mp3")
                 {
                     fileExists = true;
                     break;
@@ -128,16 +135,19 @@ namespace Cecilia_NET.Modules
                 if (streamInfo != null)
                 {
                     // Download
-                    await youtube.Videos.Streams.DownloadAsync(streamInfo, $"AudioCache/{video.Title}.mp3");
+                    await youtube.Videos.Streams.DownloadAsync(streamInfo, $"AudioCache/{processedTitle}.mp3");
                 }
             }
 
-            // Delete user command
-            await Context.Channel.DeleteMessageAsync(Context.Message.Id);
+            // Delete user command if not deleted by join
+            if (Context.Channel.GetMessageAsync(Context.Message.Id).Result != null)
+            {
+                await Context.Channel.DeleteMessageAsync(Context.Message.Id);
+            }
 
             // 3. Add to queue
             EmbedBuilder builder = new EmbedBuilder();
-            _musicPlayer.AddSongToQueue(Context,$"AudioCache/{video.Title}.mp3",video, ref builder);
+            _musicPlayer.AddSongToQueue(Context,$"AudioCache/{processedTitle}.mp3",video, ref builder);
 
             // 4. Notify added
             await Context.Channel.SendMessageAsync("", false, builder.Build());

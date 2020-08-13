@@ -18,5 +18,17 @@ namespace Cecilia_NET
                 return guildUser.Nickname ?? guildUser.Username;
             }
         }
+
+        public static string ProcessVideoTitle(string videoTitle)
+        {
+            // Remove forward slashes
+            var output = videoTitle.Replace('/', ' ');
+            // remove back slashes
+            output = output.Replace('\\',' ');
+            // Remove all spaces
+            output = output.Replace(' ', '-');
+
+            return output;
+        }
     }
 }

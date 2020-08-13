@@ -12,8 +12,9 @@ namespace Cecilia_NET.Modules
         [Summary("Pings a message back. Allows checking of health")]
         public async Task PingAsync()
         {
-            await Context.Message.DeleteAsync();
             await Context.Channel.SendMessageAsync($"Pong! (Requested by {Context.User.Username})");
+            // Delete sending message
+            await Context.Message.DeleteAsync();
         }
 
         [Command("whois")]
@@ -35,6 +36,8 @@ namespace Cecilia_NET.Modules
             embedBuilder.AddField("Name", Helpers.GetDisplayName(Context.User) );
 
             await Context.Channel.SendMessageAsync("",false,embedBuilder.Build());
+            // Delete sending message
+            await Context.Message.DeleteAsync();
 
         }
     }
