@@ -15,9 +15,25 @@ namespace Cecilia_NET.Services
 {
     public class MusicPlayer
     {
+        private Process ffmpeg;
+        private Stream output;
+
         public MusicPlayer()
         {
             _activeAudioClients = new Dictionary<ulong, WrappedAudioClient>();
+        }
+
+        public void CloseFileStreams()
+        {
+            if (ffmpeg != null && output != null)
+            {
+                ffmpeg.Close();
+                output.Close();
+            }
+            else
+            {
+                Console.WriteLine("ERROR: \"ffmpeg\" or \"output\" is null - cannot close streams! (See MusicPlayer.cs - Line 28)");
+            }
         }
         
         public void RegisterAudioClient(ulong guildId,IAudioClient client)
@@ -91,9 +107,9 @@ namespace Cecilia_NET.Services
                     {
                         // Get song from queue
                         var filePath = activeClient.Queue.First.Value.Item1;
-                        using var ffmpeg = CreateStream(filePath);
+                        ffmpeg = CreateStream(filePath);
                         // Setup ffmpeg output
-                        await using var output = ffmpeg.StandardOutput.BaseStream;
+                        output = ffmpeg.StandardOutput.BaseStream;
                         // Create discord pcm stream
                         await using var discord = activeClient.Client.CreatePCMStream(AudioApplication.Music);
                         // Set speaking indicator
@@ -165,7 +181,7 @@ namespace Cecilia_NET.Services
                                 // Check file before cont
                                 // Stops file deleting if same song is multi queued
                                 // TODO: This sucks. make it more efficient - Michael
-                               // Check each item in this queue
+                                // Check each item in this queue
                                 foreach (var queueItem in activeClient.Queue)
                                 {
                                     // If we find the song in queue
