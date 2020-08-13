@@ -90,9 +90,9 @@ namespace Cecilia_NET.Services
                         var filePath = activeClient.Queue.First.Value.Item1;
                         using var ffmpeg = CreateStream(filePath);
                         // Setup ffmpeg output
-                        var output = ffmpeg.StandardOutput.BaseStream;
+                        await using var output = ffmpeg.StandardOutput.BaseStream;
                         // Create discord pcm stream
-                        var discord = activeClient.Client.CreatePCMStream(AudioApplication.Music);
+                        await using var discord = activeClient.Client.CreatePCMStream(AudioApplication.Music);
 
                         // Set speaking indicator
                         await activeClient.Client.SetSpeakingAsync(true);
