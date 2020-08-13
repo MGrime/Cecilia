@@ -78,18 +78,6 @@ namespace Cecilia_NET.Modules
         [Summary("Adds a song to the play queue")]
         public async Task PlayAsync([Remainder] [Summary("The URL to play.")] string uri)
         {
-            // Check if uri is blank
-            if (uri == null)
-            {
-                // Could be resume
-                if (_musicPlayer.ActiveAudioClients[Context.Guild.Id].Paused)
-                {
-                    Console.WriteLine("Resume requested!");
-                    _musicPlayer.ActiveAudioClients[Context.Guild.Id].Paused = false;
-                    await Context.Channel.SendMessageAsync("Resuming playback!");
-                }
-            }
-            
             // Check if connected to voice
             if (Context.Guild.AudioClient == null || Context.Guild.AudioClient.ConnectionState != ConnectionState.Connected)
             {
