@@ -197,7 +197,7 @@ namespace Cecilia_NET.Services
                 set => _playing = value;
             }
 
-            public Mutex Mutex
+            public Mutex QueueMutex
             {
                 get => _mutex;
                 set => _mutex = value;
