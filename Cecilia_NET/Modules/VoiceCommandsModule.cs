@@ -214,7 +214,7 @@ namespace Cecilia_NET.Modules
         public async Task SkipAsync()
         {
             // Log skip
-            Console.WriteLine("Skip requested!");
+            await Bot.CreateLogEntry(LogSeverity.Info, "Commands", "Skip Requested!");
             // Set skip boolean
             _musicPlayer.ActiveAudioClients[Context.Guild.Id].Skip = true;
             // Output skipping song message
@@ -240,7 +240,7 @@ namespace Cecilia_NET.Modules
             if (!_musicPlayer.ActiveAudioClients[Context.Guild.Id].Paused)
             {
                 // Log
-                Console.WriteLine("Pause requested!");
+                await Bot.CreateLogEntry(LogSeverity.Info, "Commands", "Pause Requested!");
                 // Set paused boolean
                 _musicPlayer.ActiveAudioClients[Context.Guild.Id].Paused = true;
                 // output paused message
@@ -260,7 +260,7 @@ namespace Cecilia_NET.Modules
             if (_musicPlayer.ActiveAudioClients[Context.Guild.Id].Paused)
             {
                 // Log
-                Console.WriteLine("Resume requested!");
+                await Bot.CreateLogEntry(LogSeverity.Info, "Commands", "Resume Requested!");
                 // Unset pause boolean
                 _musicPlayer.ActiveAudioClients[Context.Guild.Id].Paused = false;
                 // Send message

@@ -14,6 +14,7 @@ using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
+using YouTubeSearch;
 using static System.String;    // Speeds up string comparison calls
 
 namespace Cecilia_NET
@@ -86,7 +87,10 @@ namespace Cecilia_NET
             await _commandHandler.InstallCommandsAsync();
 
             // Now login is okay and commands are registered we can start               
-            await _client.StartAsync();                     
+            await _client.StartAsync();
+
+            await _client.SetGameAsync("some tunes!", null, ActivityType.Listening);
+            
             
             // Block this main task until program is closed
             await Task.Delay(-1);
@@ -94,7 +98,13 @@ namespace Cecilia_NET
         
         // Log to console for now
         // TODO: Link to a proper logging system. Perhaps even something GUI based for bot management.
-        private Task LogAsync(LogMessage msg )
+        public static Task CreateLogEntry(LogSeverity severity,string source,string msg)
+        {
+            var logMsg = new LogMessage(severity,source,msg,null);
+            LogAsync(logMsg);
+            return Task.CompletedTask;
+        }
+        public static Task LogAsync(LogMessage msg)
         {
             // Log to console
             Console.WriteLine(msg.ToString());

@@ -33,7 +33,7 @@ namespace Cecilia_NET.Services
             }
             else
             {
-                Console.WriteLine("ERROR: \"ffmpeg\" or \"output\" is null - cannot close streams! (See MusicPlayer.cs - Line 28)");
+                Bot.CreateLogEntry(LogSeverity.Error, "Music Player", "ERROR: \"ffmpeg\" or \"output\" is null - cannot close streams! (See MusicPlayer.cs - Line 28)");
             }
         }
         
@@ -42,14 +42,14 @@ namespace Cecilia_NET.Services
             // Add the audio client
             _activeAudioClients.Add(guildId, new WrappedAudioClient(client));
 
-            Console.WriteLine("Client added!");
+            Bot.CreateLogEntry(LogSeverity.Info,"Music Player","Client Added");
         }
 
         public void RemoveAudioClient(ulong guildId)
         {
             _activeAudioClients.Remove(guildId);
 
-            Console.WriteLine("Client removed!");
+            Bot.CreateLogEntry(LogSeverity.Info,"Music Player","Client Removed");
         }
 
         public void AddSongToQueue(SocketCommandContext context,string filePath,Video videoData, ref EmbedBuilder addedEmbed)
@@ -64,11 +64,11 @@ namespace Cecilia_NET.Services
             }
             // Wait for it to be free
             mutex.WaitOne(-1);
-            Console.WriteLine("Adding to queue for guild: " + context.Guild.Id);
+            Bot.CreateLogEntry(LogSeverity.Info,"Music Player","Adding to queue for guild: " + context.Guild.Id);
             // Add song to queue
             _activeAudioClients[context.Guild.Id].Queue.AddLast(new Tuple<string,Video, EmbedBuilder>(filePath,videoData,Helpers.CeciliaEmbed(context)));
             // Release mutex
-            Console.WriteLine("Added to queue for guild: " + context.Guild.Id);
+            Bot.CreateLogEntry(LogSeverity.Info,"Music Player","Added to queue for guild: " + context.Guild.Id);
             mutex.ReleaseMutex();
             
             // create embed
@@ -138,7 +138,7 @@ namespace Cecilia_NET.Services
                             if (activeClient.Paused) continue;
                             
                             // Read a block of stream
-                            int blockSize = 1920;
+                            int blockSize = 3840;
                             byte[] buffer = new byte[blockSize];
                             var byteCount = await _ffmpeg.StandardOutput.BaseStream.ReadAsync(buffer, 0, blockSize);
                             
@@ -220,7 +220,7 @@ namespace Cecilia_NET.Services
                             }
                             catch (Exception e)
                             {
-                                Console.WriteLine(e);
+                                Bot.CreateLogEntry(LogSeverity.Error,"Music Player",e.ToString());
                             }
                         }
 
