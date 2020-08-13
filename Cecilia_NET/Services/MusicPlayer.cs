@@ -15,8 +15,8 @@ namespace Cecilia_NET.Services
 {
     public class MusicPlayer
     {
-        private Process ffmpeg;
-        private Stream output;
+        private Process _ffmpeg;
+        private Stream _output;
 
         public MusicPlayer()
         {
@@ -25,10 +25,10 @@ namespace Cecilia_NET.Services
 
         public void CloseFileStreams()
         {
-            if (ffmpeg != null && output != null)
+            if (_ffmpeg != null && _output != null)
             {
-                ffmpeg.Close();
-                output.Close();
+                _ffmpeg.Close();
+                _output.Close();
             }
             else
             {
@@ -107,9 +107,9 @@ namespace Cecilia_NET.Services
                     {
                         // Get song from queue
                         var filePath = activeClient.Queue.First.Value.Item1;
-                        ffmpeg = CreateStream(filePath);
+                        _ffmpeg = CreateStream(filePath);
                         // Setup ffmpeg output
-                        output = ffmpeg.StandardOutput.BaseStream;
+                        _output = _ffmpeg.StandardOutput.BaseStream;
                         // Create discord pcm stream
                         await using var discord = activeClient.Client.CreatePCMStream(AudioApplication.Music);
                         // Set speaking indicator
@@ -127,9 +127,9 @@ namespace Cecilia_NET.Services
                         while (true)
                         {
                             // Stream is over, broken, or skip requested
-                            if (ffmpeg.HasExited || discord == null || activeClient.Skip)
+                            if (_ffmpeg.HasExited || discord == null || activeClient.Skip)
                             {
-                                ffmpeg.Close();
+                                _ffmpeg.Close();
                                 break;
                             }
                             
@@ -139,7 +139,7 @@ namespace Cecilia_NET.Services
                             // Read a block of stream
                             int blockSize = 1920;
                             byte[] buffer = new byte[blockSize];
-                            var byteCount = await ffmpeg.StandardOutput.BaseStream.ReadAsync(buffer, 0, blockSize);
+                            var byteCount = await _ffmpeg.StandardOutput.BaseStream.ReadAsync(buffer, 0, blockSize);
                             
                             // Stream cannot be read or file is ended
                             if (byteCount <= 0) break;
@@ -203,7 +203,7 @@ namespace Cecilia_NET.Services
                         if (!found)
                         {
                             // Make sure fully done before deletion
-                            output.Close();
+                            _output.Close();
                             // Catch windows requirement for File.Delete
                             try
                             {
