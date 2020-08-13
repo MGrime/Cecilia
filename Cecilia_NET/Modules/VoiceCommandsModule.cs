@@ -164,7 +164,7 @@ namespace Cecilia_NET.Modules
         {
             Console.WriteLine("Skip requested!");
             _musicPlayer.ActiveAudioClients[Context.Guild.Id].Skip = true;
-            var message = await Context.Channel.SendMessageAsync("Skipping song! Requested by (" + Helpers.GetDisplayName(Context.User) + ")");
+            var message = await Context.Channel.SendMessageAsync("Skipping song! Requested by " + Helpers.GetDisplayName(Context.User) + ")");
 
             // Delete the user command
             Helpers.DeleteUserCommand(Context);
@@ -178,7 +178,7 @@ namespace Cecilia_NET.Modules
             {
                 Console.WriteLine("Pause requested!");
                 _musicPlayer.ActiveAudioClients[Context.Guild.Id].Paused = true;
-                await Context.Channel.SendMessageAsync("Pausing playback (Requested by " + Helpers.GetDisplayName(Context.User) + ")");
+                await Context.Channel.SendMessageAsync("Pausing playback Requested by " + Helpers.GetDisplayName(Context.User) + ")");
 
                 // Delete the user command
                 Helpers.DeleteUserCommand(Context);
@@ -193,7 +193,7 @@ namespace Cecilia_NET.Modules
             {
                 Console.WriteLine("Resume requested!");
                 _musicPlayer.ActiveAudioClients[Context.Guild.Id].Paused = false;
-                await Context.Channel.SendMessageAsync("Resuming playback! (Requested by " + Helpers.GetDisplayName(Context.User) + ")");
+                await Context.Channel.SendMessageAsync("Resuming playback! Requested by " + Helpers.GetDisplayName(Context.User) + ")");
 
                 // Delete the user command
                 Helpers.DeleteUserCommand(Context);
