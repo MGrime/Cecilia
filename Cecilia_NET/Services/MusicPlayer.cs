@@ -64,7 +64,7 @@ namespace Cecilia_NET.Services
             mutex.WaitOne(-1);
             await Bot.CreateLogEntry(LogSeverity.Info,"Music Player","Adding to queue for guild: " + context.Guild.Id);
             // Add song to queue
-            activeClient.Queue.AddLast(new QueueEntry(filePath,context.Message.ToString(),videoData,streamData,Helpers.CeciliaEmbed(context),!toDownload));
+            activeClient.Queue.AddLast(new QueueEntry(filePath,videoData,streamData,Helpers.CeciliaEmbed(context),!toDownload));
             // Release mutex
             await Bot.CreateLogEntry(LogSeverity.Info,"Music Player","Added to queue for guild: " + context.Guild.Id);
             mutex.ReleaseMutex();
@@ -145,10 +145,11 @@ namespace Cecilia_NET.Services
                         activeEmbed.WithTitle("Now Playing!");
                         // Remove queue counter at the end of fields
                         activeEmbed.Fields.RemoveAt(activeEmbed.Fields.Count - 1);
-                        // Query Spotify with the video title
-                        var spotifyQuery = await Helpers.SpotifyQuery(activeClient.Queue.First.Value.SearchTerm, activeClient.Queue.First.Value.MetaData.Title);
+                        //
+                        var spotifyQuery = await Helpers.SpotifyQuery(activeClient.Queue.First.Value.MetaData.Title);
                         
                         // Match video to query to improve match
+                        
                         if (spotifyQuery.Count != 0)
                         {
                             var spotifyHyperlink = $" [Listen on Spotify](https://open.spotify.com/track/{spotifyQuery[0].Id})";
@@ -365,17 +366,15 @@ namespace Cecilia_NET.Services
         public class QueueEntry
         {
             public string FilePath { get; set; }
-            public string SearchTerm { get; set; }
             public Video MetaData { get; set; }
             public IStreamInfo StreamInfo { get; set; }
             public EmbedBuilder EmbedBuilder { get; set; }
             
             public bool IsDownloaded { get; set; }
 
-            public QueueEntry(string filePath, string searchTerm, Video metaData, IStreamInfo streamInfo, EmbedBuilder embedBuilder, bool isDownloaded)
+            public QueueEntry(string filePath, Video metaData, IStreamInfo streamInfo, EmbedBuilder embedBuilder, bool isDownloaded)
             {
                 FilePath = filePath;
-                SearchTerm = searchTerm;
                 MetaData = metaData;
                 StreamInfo = streamInfo;
                 EmbedBuilder = embedBuilder;
