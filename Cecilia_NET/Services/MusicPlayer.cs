@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Audio;
 using Discord.Commands;
+using SpotifyAPI.Web;
 using YoutubeExplode;
 using YoutubeExplode.Videos;
 using YoutubeExplode.Videos.Streams;
@@ -149,14 +150,17 @@ namespace Cecilia_NET.Services
                         var spotifyQuery = await Helpers.SpotifyQuery(activeClient.Queue.First.Value.MetaData.Title);
                         
                         // Match video to query to improve match
-                        
-                        if (spotifyQuery.Count != 0)
+
+                        if (spotifyQuery != null)
                         {
-                            var spotifyHyperlink = $" [Listen on Spotify](https://open.spotify.com/track/{spotifyQuery[0].Id})";
+                            if (spotifyQuery.Count != 0)
+                            {
+                                var spotifyHyperlink = $" [Listen on Spotify](https://open.spotify.com/track/{spotifyQuery[0].Id})";
 
-                            activeEmbed.AddField("Music Platforms",spotifyHyperlink);
+                                activeEmbed.AddField("Music Platforms",spotifyHyperlink);
+                            }
+
                         }
-
                         // Send
                         var message = await context.Channel.SendMessageAsync("", false, activeEmbed.Build());
 
