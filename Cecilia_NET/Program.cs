@@ -30,24 +30,62 @@ namespace Cecilia_NET
             // Find out platform
             OsPlatform = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? OSPlatform.Windows : OSPlatform.Linux;
 
-            BotConfig = new Config();
+            BotConfig = new DiscordConfig();
             // Extract config from .json in root directory
             while (Compare(BotConfig.Token, "", StringComparison.Ordinal) == 0)
             {
                 try
                 {
-                    var rawConfig = System.IO.File.ReadAllText(@"config.json").Replace(Environment.NewLine,"");
-                    BotConfig = JsonConvert.DeserializeObject<Config>(rawConfig);
+                    var rawConfig = System.IO.File.ReadAllText(@"bot.json").Replace(Environment.NewLine,"");
+                    BotConfig = JsonConvert.DeserializeObject<DiscordConfig>(rawConfig);
                 }
-                catch (System.IO.FileNotFoundException)
+                catch (System.IO.FileNotFoundException e)
                 {
-                    Console.WriteLine("ERROR: Fill in the file (config.json) in the directory of the DLL. Press escape to quit! Press any other key to hot reload!");
+                    Console.WriteLine("ERROR: bot.json not found! Please download from GitHub repo! Press escape to quit! Press any other key to hot reload!");
                     if (Console.ReadKey().Key == ConsoleKey.Escape)
                     {
                         return;
                     }
                 }
+                // Check its filled
+                if (BotConfig.Token == "" || BotConfig.Prefix == "")
+                {
+                    Console.WriteLine("ERROR: Please fill a valid token and prefix to bot.json. Press escape to quit! Press any other key to hot reload!");
+                    if (Console.ReadKey().Key == ConsoleKey.Escape)
+                    {
+                        return;
+                    }
+                }
+                
+                
             }
+            // Look for spotify app file
+            try
+            {
+                // Load in data
+                var spotifyConfigRaw = File.ReadAllText(@"spotify.json".Replace(Environment.NewLine, ""));
+                // Deserialize
+                var spotifyClientData = JsonConvert.DeserializeObject<SpotifyClientData>(spotifyConfigRaw);
+                // Load into credential thing
+                SpotifyConfig = SpotifyClientConfig
+                    .CreateDefault()
+                    .WithAuthenticator(new ClientCredentialsAuthenticator(spotifyClientData.ClientId,spotifyClientData.ClientSecret));
+                // Notify success
+                Bot.CreateLogEntry(LogSeverity.Info, "Spotify",
+                    "Loaded Spotify Integration!");
+            }
+            catch (System.IO.FileNotFoundException e)
+            {
+                // Doesnt matter just means no spotify integration
+                Bot.CreateLogEntry(LogSeverity.Info, "Spotify",
+                    "Download the spotify.json from GitHub and fill it in for Spotify Integration!");
+                SpotifyConfig = null;
+                throw;
+            }
+            
+            
+            // Generate spotify key
+            
 
             if (!Directory.Exists("AudioCache"))
             {
@@ -60,7 +98,7 @@ namespace Cecilia_NET
         }
 
         // Allows for async calls to Discord.NET
-        private async Task MainASync(Config config)
+        private async Task MainASync(DiscordConfig config)
         {
             // Create base for client
             _client = new DiscordSocketClient();
@@ -128,7 +166,8 @@ namespace Cecilia_NET
         // Manages dependency injection
         private IServiceProvider _services;
         // Config
-        public static Config BotConfig { get; set; }
+        public static DiscordConfig BotConfig { get; set; }
+        public static SpotifyClientConfig SpotifyConfig { get; set; }
         public static OSPlatform OsPlatform { get; set; }
 
 

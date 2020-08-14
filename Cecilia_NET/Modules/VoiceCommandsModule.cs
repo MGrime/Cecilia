@@ -83,8 +83,10 @@ namespace Cecilia_NET.Modules
             }
             // There is a connect in this guild
             // Disconnect
-            await Context.Guild.AudioClient.StopAsync();
-            _musicPlayer.RemoveAudioClient(Context.Guild.Id);
+            Console.WriteLine("Leaving!");
+            await _musicPlayer.ActiveAudioClients[Context.Guild.Id].Client.StopAsync();
+            Console.WriteLine("Ive left");
+             _musicPlayer.RemoveAudioClient(Context.Guild.Id);
             
             // Cleanup audio cache
             // If there are no active clients

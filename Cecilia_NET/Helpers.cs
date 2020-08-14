@@ -34,15 +34,10 @@ namespace Cecilia_NET
         // Delete the message that sent the command
         public static async void DeleteUserCommand(SocketCommandContext context)
         {
-            try
-            {
-                await context.Channel.DeleteMessageAsync(context.Message.Id);
-            }
-            catch (Exception e)
-            {
-                await Bot.CreateLogEntry(LogSeverity.Warning, "MSGDeletion", e.ToString());
-            }
+            if (context.Channel.GetMessageAsync(context.Message.Id).Result == null) return;
             
+            await context.Channel.DeleteMessageAsync(context.Message.Id);
+
         }
     
         // Remove characters that could break filenames & paths
@@ -91,18 +86,34 @@ namespace Cecilia_NET
 
         public static async Task<System.Collections.Generic.List<FullTrack>> SpotifyQuery(string searchTerms)
         {
+            // This is not perfect but should help with things like BAND - SONG (live in yada yada)
+
             if (searchTerms.Contains('('))
             {
                 searchTerms = searchTerms.Remove(searchTerms.IndexOf('('));
             }
-            
-            if (Bot.BotConfig.SpotifyKey == "-1") return null;
-            
-            var spotify = new SpotifyClient(Bot.BotConfig.SpotifyKey);
 
-            var search = await spotify.Search.Item(new SearchRequest(SpotifyAPI.Web.SearchRequest.Types.Track, searchTerms));
+            if (searchTerms.Contains('['))
+            {
+                searchTerms = searchTerms.Remove(searchTerms.IndexOf('['));
+            }
 
-            if (search.Tracks.Items.Count == 0) return null;
+            // If they haven't provided a client then leave
+            if (Bot.SpotifyConfig == null) return null;
+            
+            var spotify = new SpotifyClient(Bot.SpotifyConfig);
+            SearchResponse search;
+            try
+            {
+                search = await spotify.Search.Item(new SearchRequest(SpotifyAPI.Web.SearchRequest.Types.Track, searchTerms));
+            }
+            catch (Exception e)
+            {
+                await Bot.CreateLogEntry(LogSeverity.Warning, "Spotify", e.Message);
+                return null;
+            }
+
+            if (search.Tracks.Items?.Count == 0) return null;
             else return search.Tracks.Items;
         }
     }
