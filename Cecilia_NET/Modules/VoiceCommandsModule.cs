@@ -193,7 +193,7 @@ namespace Cecilia_NET.Modules
 
             // 3. Add to queue and send stream info so download can be processed
             await Context.Channel.DeleteMessageAsync(searchEmbed.Id);
-            var builder = await _musicPlayer.AddSongToQueue(Context,$"{directoryPrefix}{processedTitle}.mp3",video,streams.GetAudioOnly().WithHighestBitrate(),!fileExists);
+            var builder = await _musicPlayer.AddSongToQueue(Context,$"{directoryPrefix}{processedTitle}.mp3",video,streams.GetAudioOnly().WithHighestBitrate(), uri,!fileExists);
 
             // 4. Notify added
             await Context.Channel.SendMessageAsync("", false, builder.Build());

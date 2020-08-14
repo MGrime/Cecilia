@@ -55,7 +55,7 @@ namespace Cecilia_NET.Services
             Bot.CreateLogEntry(LogSeverity.Info, "Music Player", "Client Removed");
         }
 
-        public async Task<EmbedBuilder> AddSongToQueue(SocketCommandContext context,string filePath,Video videoData,IStreamInfo streamData,bool toDownload)
+        public async Task<EmbedBuilder> AddSongToQueue(SocketCommandContext context,string filePath,Video videoData,IStreamInfo streamData, string searchTerm, bool toDownload)
         {
             var activeClient = _activeAudioClients[context.Guild.Id];
             // THIS METHOD REQUIRES A MUTEX INCASE MULTIPLE SONGS ARE QUEUED UP IN QUICK SUCCESSION
@@ -65,7 +65,7 @@ namespace Cecilia_NET.Services
             mutex.WaitOne(-1);
             await Bot.CreateLogEntry(LogSeverity.Info,"Music Player","Adding to queue for guild: " + context.Guild.Id);
             // Add song to queue
-            activeClient.Queue.AddLast(new QueueEntry(filePath,videoData,streamData,Helpers.CeciliaEmbed(context),!toDownload));
+            activeClient.Queue.AddLast(new QueueEntry(filePath, searchTerm, videoData,streamData,Helpers.CeciliaEmbed(context),!toDownload));
             // Release mutex
             await Bot.CreateLogEntry(LogSeverity.Info,"Music Player","Added to queue for guild: " + context.Guild.Id);
             mutex.ReleaseMutex();
@@ -147,7 +147,7 @@ namespace Cecilia_NET.Services
                         // Remove queue counter at the end of fields
                         activeEmbed.Fields.RemoveAt(activeEmbed.Fields.Count - 1);
                         //
-                        var spotifyQuery = await Helpers.SpotifyQuery(activeClient.Queue.First.Value.MetaData.Title);
+                        var spotifyQuery = await Helpers.SpotifyQuery(activeClient.Queue.First.Value.SearchTerm, activeClient.Queue.First.Value.MetaData.Title);
                         
                         // Match video to query to improve match
 
@@ -370,15 +370,17 @@ namespace Cecilia_NET.Services
         public class QueueEntry
         {
             public string FilePath { get; set; }
+            public string SearchTerm { get; set; }
             public Video MetaData { get; set; }
             public IStreamInfo StreamInfo { get; set; }
             public EmbedBuilder EmbedBuilder { get; set; }
             
             public bool IsDownloaded { get; set; }
 
-            public QueueEntry(string filePath, Video metaData, IStreamInfo streamInfo, EmbedBuilder embedBuilder, bool isDownloaded)
+            public QueueEntry(string filePath, string searchTerm, Video metaData, IStreamInfo streamInfo, EmbedBuilder embedBuilder, bool isDownloaded)
             {
                 FilePath = filePath;
+                SearchTerm = searchTerm;
                 MetaData = metaData;
                 StreamInfo = streamInfo;
                 EmbedBuilder = embedBuilder;
