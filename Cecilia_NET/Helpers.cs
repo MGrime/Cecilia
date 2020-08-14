@@ -1,7 +1,10 @@
 using System;
+using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using YoutubeExplode;
+using YoutubeExplode.Videos.Streams;
 
 namespace Cecilia_NET
 {
@@ -75,6 +78,12 @@ namespace Cecilia_NET
             var correctedMinutes = DateTime.Now.Minute <= 9 ? $"0{DateTime.Now.Minute}" : DateTime.Now.Minute.ToString();
             outBuilder.WithFooter($"Requested by {GetDisplayName(context.User)} @ {DateTime.Now.Hour}:{correctedMinutes}");
             return outBuilder;
+        }
+
+        public static async Task DownloadSong(IStreamInfo streamInfo, string filePath)
+        {
+            var youtube = new YoutubeClient();
+            await youtube.Videos.Streams.DownloadAsync(streamInfo, filePath);
         }
     }
 }

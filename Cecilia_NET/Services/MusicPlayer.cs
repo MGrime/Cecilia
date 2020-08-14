@@ -8,7 +8,9 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Audio;
 using Discord.Commands;
+using YoutubeExplode;
 using YoutubeExplode.Videos;
+using YoutubeExplode.Videos.Streams;
 
 namespace Cecilia_NET.Services
 {
@@ -51,28 +53,43 @@ namespace Cecilia_NET.Services
             Bot.CreateLogEntry(LogSeverity.Info,"Music Player","Client Removed");
         }
 
-        public void AddSongToQueue(SocketCommandContext context,string filePath,Video videoData, ref EmbedBuilder addedEmbed)
+        public async Task<EmbedBuilder> AddSongToQueue(SocketCommandContext context,string filePath,Video videoData,IStreamInfo streamData,bool toDownload)
         {
+            var activeClient = _activeAudioClients[context.Guild.Id];
             // THIS METHOD REQUIRES A MUTEX INCASE MULTIPLE SONGS ARE QUEUED UP IN QUICK SUCCESSION
             // Find the mutex for this queue
             var mutex = _activeAudioClients[context.Guild.Id].QueueMutex;
-            // Just make sure
-            if (mutex == null)
-            {
-                return;
-            }
             // Wait for it to be free
             mutex.WaitOne(-1);
-            Bot.CreateLogEntry(LogSeverity.Info,"Music Player","Adding to queue for guild: " + context.Guild.Id);
+            await Bot.CreateLogEntry(LogSeverity.Info,"Music Player","Adding to queue for guild: " + context.Guild.Id);
             // Add song to queue
-            _activeAudioClients[context.Guild.Id].Queue.AddLast(new Tuple<string,Video, EmbedBuilder>(filePath,videoData,Helpers.CeciliaEmbed(context)));
+            activeClient.Queue.AddLast(new QueueEntry(filePath,videoData,streamData,Helpers.CeciliaEmbed(context),!toDownload));
             // Release mutex
-            Bot.CreateLogEntry(LogSeverity.Info,"Music Player","Added to queue for guild: " + context.Guild.Id);
+            await Bot.CreateLogEntry(LogSeverity.Info,"Music Player","Added to queue for guild: " + context.Guild.Id);
             mutex.ReleaseMutex();
+            
+            // Check if we need to download
+            // If the queue is empty or queue size is one then there is nothing playing so download, or it is next up so download
+            // If queue is > 1 in size then there is something playing, and there is a song ready, so dont download. mark not downloaded
+            // However if this is false then it is already downloaded so just ignore
+            if (toDownload)
+            {
+                // Check queue
+                if (activeClient.Queue.Count <= 2)
+                {
+                    await Helpers.DownloadSong(activeClient.Queue.Last.Value.StreamInfo, activeClient.Queue.Last.Value.FilePath);
+                    activeClient.Queue.Last.Value.IsDownloaded = true;
+                }
+                else
+                {
+                    // Mark download needed
+                    activeClient.Queue.Last.Value.IsDownloaded = false;
+                }
+            }
             
             // create embed
             // Caching so it can be modified for playing message
-            var activeEmbed = _activeAudioClients[context.Guild.Id].Queue.Last.Value.Item3;
+            var activeEmbed = _activeAudioClients[context.Guild.Id].Queue.Last.Value.EmbedBuilder;
             activeEmbed.WithImageUrl(videoData.Thumbnails.MediumResUrl);
             activeEmbed.WithTitle("Added song!");// This can be switched later
             activeEmbed.AddField("Title",$"[{videoData.Title}]({videoData.Url})");
@@ -81,7 +98,7 @@ namespace Cecilia_NET.Services
             activeEmbed.AddField("Queue Position", _activeAudioClients[context.Guild.Id].Queue.Count);
 
             // Pass back
-            addedEmbed = activeEmbed;
+            return activeEmbed;
         }
 
         public async Task PlayAudio(SocketCommandContext context)
@@ -91,6 +108,7 @@ namespace Cecilia_NET.Services
             var activeClient = _activeAudioClients[context.Guild.Id];
             if (activeClient != null)
             {
+                var previousSkipStatus = false;
                 // Check if already playing audio
                 if (activeClient.Playing)
                 {
@@ -105,8 +123,13 @@ namespace Cecilia_NET.Services
                     // While there are songs to play
                     while (activeClient.Playing)
                     {
+                        // Check if song is downloaded
+                        if (!activeClient.Queue.First.Value.IsDownloaded)
+                        {
+                            await Helpers.DownloadSong(activeClient.Queue.First.Value.StreamInfo, activeClient.Queue.First.Value.FilePath);
+                        }
                         // Get song from queue
-                        var filePath = activeClient.Queue.First.Value.Item1;
+                        var filePath = activeClient.Queue.First.Value.FilePath;
                         _ffmpeg = CreateStream(filePath);
                         // Setup ffmpeg output
                         _output = _ffmpeg.StandardOutput.BaseStream;
@@ -116,7 +139,7 @@ namespace Cecilia_NET.Services
                         await activeClient.Client.SetSpeakingAsync(true);
                         // Send playing message
                         // Modify embed
-                        var activeEmbed = activeClient.Queue.First.Value.Item3;
+                        var activeEmbed = activeClient.Queue.First.Value.EmbedBuilder;
                         // Set playing title
                         activeEmbed.WithTitle("Now Playing!");
                         // Remove queue counter at the end of fields
@@ -129,6 +152,7 @@ namespace Cecilia_NET.Services
                             // Stream is over, broken, or skip requested
                             if (_ffmpeg.HasExited || discord == null || activeClient.Skip)
                             {
+                                previousSkipStatus = activeClient.Skip;
                                 CloseFileStreams();
                                 break;
                             }
@@ -184,7 +208,7 @@ namespace Cecilia_NET.Services
                                 foreach (var queueItem in activeClient.Queue)
                                 {
                                     // If we find the song in queue
-                                    if (queueItem.Item1.Equals(filePath))
+                                    if (queueItem.FilePath.Equals(filePath))
                                     {
                                         // Mark for no delete
                                         found = true;
@@ -218,7 +242,7 @@ namespace Cecilia_NET.Services
                             }
                             catch (Exception e)
                             {
-                                Bot.CreateLogEntry(LogSeverity.Error,"Music Player",e.ToString());
+                                await Bot.CreateLogEntry(LogSeverity.Error,"Music Player",e.ToString());
                             }
                         }
 
@@ -228,18 +252,18 @@ namespace Cecilia_NET.Services
                         {
                             activeClient.Playing = false;
                         }
+                        // Reset skip trigger
+                        activeClient.Skip = false;
                         await activeClient.Client.SetSpeakingAsync(false);
                     }
                 }
 
-                if (!activeClient.Skip)
+                if (!previousSkipStatus)
                 {
                     var response = Helpers.CeciliaEmbed(context);
                     response.AddField("That's all folks!", "Spin up some more songs with the play command!");
                     await context.Channel.SendMessageAsync("", false, response.Build());
                 }
-                // Reset skip trigger
-                activeClient.Skip = false;
             }
         }
 
@@ -261,7 +285,7 @@ namespace Cecilia_NET.Services
             private IAudioClient _client;
             
             // Queue and a mutex for accessing
-            private LinkedList<Tuple<string,Video,EmbedBuilder>> _queue;
+            private LinkedList<QueueEntry> _queue;
             private Mutex _mutex;
             
             // Control over playing
@@ -272,7 +296,7 @@ namespace Cecilia_NET.Services
             public WrappedAudioClient(IAudioClient client)
             {
                 _client = client;
-                _queue = new LinkedList<Tuple<string,Video,EmbedBuilder>>();
+                _queue = new LinkedList<QueueEntry>();
                 _playing = false;
                 _paused = false;
                 _skip = false;
@@ -285,7 +309,7 @@ namespace Cecilia_NET.Services
                 set => _client = value;
             }
 
-            public LinkedList<Tuple<string,Video,EmbedBuilder>> Queue
+            public LinkedList<QueueEntry> Queue
             {
                 get => _queue;
                 set => _queue = value;
@@ -315,6 +339,25 @@ namespace Cecilia_NET.Services
                 set => _mutex = value;
             }
 
+        }
+
+        public class QueueEntry
+        {
+            public string FilePath { get; set; }
+            public Video MetaData { get; set; }
+            public IStreamInfo StreamInfo { get; set; }
+            public EmbedBuilder EmbedBuilder { get; set; }
+            
+            public bool IsDownloaded { get; set; }
+
+            public QueueEntry(string filePath, Video metaData, IStreamInfo streamInfo, EmbedBuilder embedBuilder, bool isDownloaded)
+            {
+                FilePath = filePath;
+                MetaData = metaData;
+                StreamInfo = streamInfo;
+                EmbedBuilder = embedBuilder;
+                IsDownloaded = isDownloaded;
+            }
         }
         private readonly Dictionary<ulong,WrappedAudioClient> _activeAudioClients;
 

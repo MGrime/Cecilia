@@ -185,30 +185,18 @@ namespace Cecilia_NET.Modules
                     break;
                 }
             }
-            // Only download if it doesnt already exist
-            if (!fileExists)
-            {
-                // get streams
-                var streams = await youtube.Videos.Streams.GetManifestAsync(video.Id);
-                // Pick best audio stream
-                var streamInfo = streams.GetAudioOnly().WithHighestBitrate();
-                // Download
-                if (streamInfo != null)
-                {
-                    // Download
-                    await youtube.Videos.Streams.DownloadAsync(streamInfo, $"{directoryPrefix}{processedTitle}.mp3");
-                }
-            }
             
-            // 3. Add to queue
+            // get streams
+            var streams = await youtube.Videos.Streams.GetManifestAsync(video.Id);
+
+            // 3. Add to queue and send stream info so download can be processed
             await Context.Channel.DeleteMessageAsync(searchEmbed.Id);
-            EmbedBuilder builder = new EmbedBuilder();
-            _musicPlayer.AddSongToQueue(Context,$"{directoryPrefix}{processedTitle}.mp3",video, ref builder);
+            var builder = await _musicPlayer.AddSongToQueue(Context,$"{directoryPrefix}{processedTitle}.mp3",video,streams.GetAudioOnly().WithHighestBitrate(),!fileExists);
 
             // 4. Notify added
             await Context.Channel.SendMessageAsync("", false, builder.Build());
             
-            // Now play
+            // Now play            
             await _musicPlayer.PlayAudio(Context);
         }
 
@@ -311,7 +299,7 @@ namespace Cecilia_NET.Modules
             foreach (var item in audioClient.Queue)
             {
                 // building explicitly due to size for readability
-                var video = item.Item2;
+                var video = item.MetaData;
                 
                 string fieldValue = "";
                 var correctedSeconds = video.Duration.Seconds <= 9
