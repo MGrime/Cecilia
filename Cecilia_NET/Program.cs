@@ -81,7 +81,6 @@ namespace Cecilia_NET
                 SpotifyConfig = null;
             }
             
-            
             // Check to see if the audio cache exists
             if (!Directory.Exists("AudioCache")) // If not create it
             {
@@ -173,7 +172,5 @@ namespace Cecilia_NET
         public static DiscordConfig BotConfig { get; set; }
         public static SpotifyClientConfig SpotifyConfig { get; set; }
         public static OSPlatform OsPlatform { get; set; }
-        
-
     }
 }

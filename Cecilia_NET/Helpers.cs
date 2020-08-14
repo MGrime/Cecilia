@@ -85,28 +85,38 @@ namespace Cecilia_NET
             await youtube.Videos.Streams.DownloadAsync(streamInfo, filePath);
         }
 
-        public static async Task<System.Collections.Generic.List<FullTrack>> SpotifyQuery(string searchTerms)
+        public static async Task<System.Collections.Generic.List<FullTrack>> SpotifyQuery(string searchTerm, string videoTitle)
         {
             // This is not perfect but should help with things like BAND - SONG (live in yada yada)
+            string usedSearchTerm = "";
 
-            if (searchTerms.Contains('('))
+            if (searchTerm.Contains("http"))
             {
-                searchTerms = searchTerms.Remove(searchTerms.IndexOf('('));
+                usedSearchTerm = videoTitle;
+
+                if (videoTitle.Contains('('))
+                {
+                    videoTitle = videoTitle.Remove(videoTitle.IndexOf('('));
+                }
+
+                if (videoTitle.Contains('['))
+                {
+                    videoTitle = videoTitle.Remove(videoTitle.IndexOf('['));
+                }
             }
-
-            if (searchTerms.Contains('['))
+            else
             {
-                searchTerms = searchTerms.Remove(searchTerms.IndexOf('['));
+                usedSearchTerm = searchTerm;
             }
 
             // If they haven't provided a client then leave
             if (Bot.SpotifyConfig == null) return null;
-            
+
             var spotify = new SpotifyClient(Bot.SpotifyConfig);
             SearchResponse search;
             try
             {
-                search = await spotify.Search.Item(new SearchRequest(SpotifyAPI.Web.SearchRequest.Types.Track, searchTerms));
+                search = await spotify.Search.Item(new SearchRequest(SpotifyAPI.Web.SearchRequest.Types.Track, usedSearchTerm));
             }
             catch (Exception e)
             {
