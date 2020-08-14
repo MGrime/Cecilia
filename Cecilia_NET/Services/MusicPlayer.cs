@@ -50,7 +50,7 @@ namespace Cecilia_NET.Services
         {
             _activeAudioClients.Remove(guildId);
 
-            Bot.CreateLogEntry(LogSeverity.Info,"Music Player","Client Removed");
+            Bot.CreateLogEntry(LogSeverity.Info, "Music Player", "Client Removed");
         }
 
         public async Task<EmbedBuilder> AddSongToQueue(SocketCommandContext context,string filePath,Video videoData,IStreamInfo streamData,bool toDownload)
@@ -145,11 +145,14 @@ namespace Cecilia_NET.Services
                         // Remove queue counter at the end of fields
                         activeEmbed.Fields.RemoveAt(activeEmbed.Fields.Count - 1);
                         //
-                        var spotifyQuery = Helpers.SpotifyQuery(activeClient.Queue.First.Value.MetaData.Title);
+                        var spotifyQuery = await Helpers.SpotifyQuery(activeClient.Queue.First.Value.MetaData.Title);
+                        
+                        // Match video to query to improve match
+                        
 
                         if (spotifyQuery != null)
                         {
-                            var spotifyHyperlink = $" [Listen on Spotify](https://open.spotify.com/track/{spotifyQuery.Result[0].Id})";
+                            var spotifyHyperlink = $" [Listen on Spotify](https://open.spotify.com/track/{spotifyQuery[0].Id})";
 
                             activeEmbed.AddField("Music Platforms",spotifyHyperlink);
                         }
@@ -160,7 +163,7 @@ namespace Cecilia_NET.Services
                         while (true)
                         {
                             // Stream is over, broken, or skip requested
-                            if (_ffmpeg.HasExited || discord == null || activeClient.Skip)
+                            if (_ffmpeg.HasExited || discord == null || activeClient.Skip)  
                             {
                                 previousSkipStatus = activeClient.Skip;
                                 CloseFileStreams();
