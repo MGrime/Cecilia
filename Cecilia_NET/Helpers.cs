@@ -28,7 +28,15 @@ namespace Cecilia_NET
         // Delete the message that sent the command
         public static async void DeleteUserCommand(SocketCommandContext context)
         {
-            await context.Channel.DeleteMessageAsync(context.Message.Id);
+            try
+            {
+                await context.Channel.DeleteMessageAsync(context.Message.Id);
+            }
+            catch (Exception e)
+            {
+                await Bot.CreateLogEntry(LogSeverity.Warning, "MSGDeletion", e.ToString());
+            }
+            
         }
     
         // Remove characters that could break filenames & paths
