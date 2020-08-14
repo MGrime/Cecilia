@@ -147,7 +147,7 @@ namespace Cecilia_NET.Services
                         //
                         var spotifyQuery = Helpers.SpotifyQuery(activeClient.Queue.First.Value.MetaData.Title);
 
-                        if (spotifyQuery != null)
+                        if (spotifyQuery.Result != null)
                         {
                             var spotifyHyperlink = $" [Listen on Spotify](https://open.spotify.com/track/{spotifyQuery.Result[0].Id})";
 

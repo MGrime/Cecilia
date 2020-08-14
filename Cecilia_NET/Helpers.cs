@@ -91,8 +91,11 @@ namespace Cecilia_NET
 
         public static async Task<System.Collections.Generic.List<FullTrack>> SpotifyQuery(string searchTerms)
         {
-            searchTerms = searchTerms.Remove(searchTerms.IndexOf('('));
-
+            if (searchTerms.Contains('('))
+            {
+                searchTerms = searchTerms.Remove(searchTerms.IndexOf('('));
+            }
+            
             if (Bot.BotConfig.SpotifyKey == "-1") return null;
             
             var spotify = new SpotifyClient(Bot.BotConfig.SpotifyKey);
