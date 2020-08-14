@@ -57,8 +57,6 @@ namespace Cecilia_NET
                         return;
                     }
                 }
-                
-                
             }
             // Look for spotify app file
             try
@@ -85,16 +83,22 @@ namespace Cecilia_NET
             }
             
             
-            // Generate spotify key
-            
-
-            if (!Directory.Exists("AudioCache"))
+            // Check to see if the audio cache exists
+            if (!Directory.Exists("AudioCache")) // If not create it
             {
                 System.IO.Directory.CreateDirectory("AudioCache");
             }
+            else // If it does, clear it
+            {
+                System.IO.DirectoryInfo di = new DirectoryInfo("AudioCache");
+
+                foreach (FileInfo file in di.GetFiles())
+                {
+                    file.Delete();
+                }
+            }
 
             // Transfer to async
-            // Catching all exceptions that reach here just to clean up then close
             new Bot().MainASync(BotConfig).GetAwaiter().GetResult();
         }
 
