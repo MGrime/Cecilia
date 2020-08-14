@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Audio;
 using Discord.Commands;
-using Discord.WebSocket;
 using YoutubeExplode.Videos;
 
 namespace Cecilia_NET.Services
@@ -138,13 +137,13 @@ namespace Cecilia_NET.Services
                             if (activeClient.Paused) continue;
                             
                             // Read a block of stream
-                            int blockSize = 3840;
+                            int blockSize = 1920;
                             byte[] buffer = new byte[blockSize];
-                            var byteCount = await _ffmpeg.StandardOutput.BaseStream.ReadAsync(buffer, 0, blockSize);
+                            var byteCount = await _output.ReadAsync(buffer, 0, blockSize);
                             
                             // Stream cannot be read or file is ended
                             if (byteCount <= 0) break;
-                            
+
                             // Write output to stream
                             try
                             {
@@ -152,10 +151,12 @@ namespace Cecilia_NET.Services
                             }
                             catch (Exception e)
                             {
-                                // Delete now-playing as it is now out of date
-                                await context.Channel.DeleteMessageAsync(message.Id);
                                 // Flush buffer
                                 discord?.FlushAsync().Wait();
+                                // Output exception
+                                await Bot.CreateLogEntry(LogSeverity.Error, "MusicPlayer", e.ToString());
+                                // Delete now-playing as it is now out of date
+                                await context.Channel.DeleteMessageAsync(message.Id);
                                 throw;
                             }
                         }
@@ -165,9 +166,6 @@ namespace Cecilia_NET.Services
 
                         // Flush buffer
                         discord?.FlushAsync().Wait();
-                        
-                        // Reset skip trigger
-                        activeClient.Skip = false;
 
                         // Delete used file && release queue
                         activeClient.Queue.RemoveFirst();
@@ -234,9 +232,14 @@ namespace Cecilia_NET.Services
                     }
                 }
 
-                var response = Helpers.CeciliaEmbed(context);
-                response.AddField("That's all folks!", "Spin up some more songs with the play command!");
-                await context.Channel.SendMessageAsync("", false, response.Build());
+                if (!activeClient.Skip)
+                {
+                    var response = Helpers.CeciliaEmbed(context);
+                    response.AddField("That's all folks!", "Spin up some more songs with the play command!");
+                    await context.Channel.SendMessageAsync("", false, response.Build());
+                }
+                // Reset skip trigger
+                activeClient.Skip = false;
             }
         }
 

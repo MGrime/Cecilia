@@ -147,17 +147,20 @@ namespace Cecilia_NET.Modules
 
             // Calculate correct directory prefix for different OS
             var directoryPrefix = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? @"AudioCache\" : "AudioCache/";
-            
+
             // Start youtube explode
             var youtube = new YoutubeClient();
             // Get video metadata & download thumbnail
             Video video;
-            try
+            // Calculate the kind of data the user has passed to the command
+            if (uri.Contains("watch?v=", StringComparison.Ordinal))
             {
+                await Bot.CreateLogEntry(LogSeverity.Info, "Command", "Video search by URL");
                 video = await youtube.Videos.GetAsync(uri);
             }
-            catch(ArgumentException e)
+            else
             {
+                await Bot.CreateLogEntry(LogSeverity.Info, "Command", "Video search by terms");
                 // This means that it is not a uri it is a search term.
                 // So search videos
                 var items = new VideoSearch();
@@ -167,7 +170,7 @@ namespace Cecilia_NET.Modules
                 var topVideo = videos.First();
                 video = await youtube.Videos.GetAsync(topVideo.getUrl());
             }
-            
+
             // Process correct title
             var processedTitle = Helpers.ProcessVideoTitle(video.Title);
             
