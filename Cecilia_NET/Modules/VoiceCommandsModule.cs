@@ -177,7 +177,9 @@ namespace Cecilia_NET.Modules
             bool fileExists = false;
             foreach (var file in Directory.GetFiles(directoryPrefix))
             {
-                if (file == $"{processedTitle}.mp3")
+                string lookupFile = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? $"{directoryPrefix}{processedTitle}.mp3" : $"{processedTitle}.mp3";
+
+                if (file == lookupFile)
                 {
                     fileExists = true;
                     break;
