@@ -189,7 +189,7 @@ namespace Cecilia_NET.Services
                             catch (Exception e)
                             {
                                 // Flush buffer
-                                discord?.FlushAsync().Wait();
+                                await discord?.FlushAsync();
                                 // Output exception
                                 await Bot.CreateLogEntry(LogSeverity.Error, "MusicPlayer", e.ToString());
                                 // Delete now-playing as it is now out of date
@@ -202,7 +202,7 @@ namespace Cecilia_NET.Services
                         await context.Channel.DeleteMessageAsync(message.Id);
 
                         // Flush buffer
-                        discord?.FlushAsync().Wait();
+                        await discord?.FlushAsync();
 
                         // Delete used file && release queue
                         activeClient.Queue.RemoveFirst();
