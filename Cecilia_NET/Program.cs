@@ -81,7 +81,6 @@ namespace Cecilia_NET
                 Bot.CreateLogEntry(LogSeverity.Info, "Spotify",
                     "Download the spotify.json from GitHub and fill it in for Spotify Integration!");
                 SpotifyConfig = null;
-                throw;
             }
             
             

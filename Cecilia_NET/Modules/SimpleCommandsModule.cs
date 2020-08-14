@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
@@ -8,7 +10,12 @@ namespace Cecilia_NET.Modules
     // Collection of simple commands such as ping, uptime etc
     public class SimpleCommandsModule : ModuleBase<SocketCommandContext>
     {
-        [Command("ping")]
+        public SimpleCommandsModule(CommandService commandService)
+        {
+            _commandService = commandService;
+        }
+        
+        [Command("Ping")]
         [Summary("Pings a message back. Allows checking of health")]
         public async Task PingAsync()
         {
@@ -17,7 +24,7 @@ namespace Cecilia_NET.Modules
             await Context.Message.DeleteAsync();
         }
 
-        [Command("whois")]
+        [Command("WhoIs")]
         [Summary("Sends an embed with data on the attached user")]
         public async Task WhoisAsync([Summary("The user to query")] SocketUser user)
         {
@@ -42,5 +49,35 @@ namespace Cecilia_NET.Modules
             await Context.Message.DeleteAsync();
 
         }
+        
+        [Command("Help")]
+        public async Task Help()
+        {
+            Helpers.DeleteUserCommand(Context);
+            
+            List<CommandInfo> commands = _commandService.Commands.ToList();
+            EmbedBuilder embedBuilder = Helpers.CeciliaEmbed(Context);
+
+            embedBuilder.WithTitle("Command List");
+            // Remove footer for dm
+            embedBuilder.WithFooter("");
+            foreach (CommandInfo command in commands)
+            {
+                // Get the command Summary attribute information
+                string embedFieldText = command.Summary ?? "No description available\n";
+
+                embedBuilder.AddField(command.Name, embedFieldText);
+            }
+            
+            await Context.User.SendMessageAsync("", false, embedBuilder.Build());
+
+            EmbedBuilder newEmbed = Helpers.CeciliaEmbed(Context);
+
+            newEmbed.AddField("Check your DM's!","I sent you all my commands!");
+
+            await Context.Channel.SendMessageAsync("", false,  newEmbed.Build());
+        }
+
+        private readonly CommandService _commandService;
     }
 }
