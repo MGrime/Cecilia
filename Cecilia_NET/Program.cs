@@ -8,6 +8,7 @@
 // Discord web connection
 using System;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Cecilia_NET.Services;
 using Discord;
@@ -25,6 +26,9 @@ namespace Cecilia_NET
         // Transfer to an async main method after acquiring token
         public static void Main(string[] args)
         {
+            // Find out platform
+            OsPlatform = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? OSPlatform.Windows : OSPlatform.Linux;
+
             BotConfig = new Config();
             // Extract config from .json in root directory
             while (Compare(BotConfig.Token, "", StringComparison.Ordinal) == 0)
@@ -124,6 +128,7 @@ namespace Cecilia_NET
         private IServiceProvider _services;
         // Config
         public static Config BotConfig { get; set; }
+        public static OSPlatform OsPlatform { get; set; }
 
 
     }

@@ -91,7 +91,7 @@ namespace Cecilia_NET.Modules
             if (_musicPlayer.ActiveAudioClients.Count == 0)
             {
                 // Get correct directory
-                var directoryPrefix = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? @"AudioCache\" : "AudioCache/";
+                var directoryPrefix = Bot.OsPlatform == OSPlatform.Windows ? @"AudioCache\" : "AudioCache/";
 
                 // Close file streams so files can be deleted
                 _musicPlayer.CloseFileStreams();
@@ -144,7 +144,7 @@ namespace Cecilia_NET.Modules
             var searchEmbed = await Context.Channel.SendMessageAsync("",false,response.Build());
 
             // Calculate correct directory prefix for different OS
-            var directoryPrefix = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? @"AudioCache\" : "AudioCache/";
+            var directoryPrefix = Bot.OsPlatform == OSPlatform.Windows ? @"AudioCache\" : "AudioCache/";
 
             // Start youtube explode
             var youtube = new YoutubeClient();

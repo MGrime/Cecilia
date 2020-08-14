@@ -228,7 +228,7 @@ namespace Cecilia_NET.Services
                             // Catch windows requirement for File.Delete
                             try
                             {
-                                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                                if (Bot.OsPlatform == OSPlatform.Windows)
                                 {
                                     string fullPath = Directory.GetCurrentDirectory() + @"\" + filePath;
 
