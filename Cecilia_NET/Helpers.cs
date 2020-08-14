@@ -4,6 +4,7 @@ using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using YoutubeExplode;
+using YoutubeExplode.Videos;
 using YoutubeExplode.Videos.Streams;
 
 namespace Cecilia_NET

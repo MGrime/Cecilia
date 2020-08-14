@@ -14,6 +14,7 @@ using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json;
 using YouTubeSearch;
 using static System.String;    // Speeds up string comparison calls
 
@@ -24,17 +25,18 @@ namespace Cecilia_NET
         // Transfer to an async main method after acquiring token
         public static void Main(string[] args)
         {
-            // Extract token from .txt in root directory
-            var token = "";
-            while (Compare(token, "", StringComparison.Ordinal) == 0)
+            BotConfig = new Config();
+            // Extract config from .json in root directory
+            while (Compare(BotConfig.Token, "", StringComparison.Ordinal) == 0)
             {
                 try
                 {
-                    token = System.IO.File.ReadAllText(@"token.txt").Replace(Environment.NewLine,"");
+                    var rawConfig = System.IO.File.ReadAllText(@"config.json").Replace(Environment.NewLine,"");
+                    BotConfig = JsonConvert.DeserializeObject<Config>(rawConfig);
                 }
                 catch (System.IO.FileNotFoundException)
                 {
-                    Console.WriteLine("ERROR: token.txt not found. Create a file with a Discord Token in the directory of the DLL. Press escape to quit! Press any other key to hot reload!");
+                    Console.WriteLine("ERROR: Fill in the file (config.json) in the directory of the DLL. Press escape to quit! Press any other key to hot reload!");
                     if (Console.ReadKey().Key == ConsoleKey.Escape)
                     {
                         return;
@@ -49,11 +51,11 @@ namespace Cecilia_NET
             
             // Transfer to async
             // Catching all exceptions that reach here just to clean up then close
-            new Bot().MainASync(token).GetAwaiter().GetResult();
+            new Bot().MainASync(BotConfig).GetAwaiter().GetResult();
         }
 
         // Allows for async calls to Discord.NET
-        private async Task MainASync(string token)
+        private async Task MainASync(Config config)
         {
             // Create base for client
             _client = new DiscordSocketClient();
@@ -62,7 +64,7 @@ namespace Cecilia_NET
             _client.Log += LogAsync;
             
             // Request login!
-            await _client.LoginAsync(TokenType.Bot, token);
+            await _client.LoginAsync(TokenType.Bot, config.Token);
             // UNTIL THIS LINE ^ COMPLETES CLIENT IS NOT IN A USABLE STATE
       
             // Create command service and handler                                
@@ -82,7 +84,7 @@ namespace Cecilia_NET
                 .AddSingleton<MusicPlayer>()    // For music audio playback
                 .BuildServiceProvider();
 
-            _commandHandler = new CommandHandler(_client,_commandService,_services,"--");  
+            _commandHandler = new CommandHandler(_client,_commandService,_services,config.Prefix);  
             // Register commands
             await _commandHandler.InstallCommandsAsync();
 
@@ -120,6 +122,9 @@ namespace Cecilia_NET
         private CommandHandler _commandHandler;
         // Manages dependency injection
         private IServiceProvider _services;
+        // Config
+        public static Config BotConfig { get; set; }
+
 
     }
 }

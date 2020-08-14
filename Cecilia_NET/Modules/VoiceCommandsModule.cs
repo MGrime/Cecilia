@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Cecilia_NET.Services;
@@ -13,7 +12,6 @@ using YoutubeExplode;
 using YoutubeExplode.Videos;
 using YoutubeExplode.Videos.Streams;
 using YouTubeSearch;
-using Embed = Discord.Embed;
 
 
 namespace Cecilia_NET.Modules
