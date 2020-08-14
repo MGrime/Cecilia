@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using Discord.Commands;
 using Discord.WebSocket;
@@ -15,6 +17,9 @@ namespace Cecilia_NET
             _client = client;
             _services = services;
             _commandPrefix = desiredPrefix;
+            _commandQueue = new Queue<QueuedCommand>();
+            _commandExecuting = false;
+            _mutex = new Mutex();
         }
         
         // Finds all of the command modules in the solution and register them to the command service
@@ -51,9 +56,36 @@ namespace Cecilia_NET
             
             // Create command context based on the message
             var context = new SocketCommandContext(_client,message);
-            
-            // Execute the command with the context and check preconditions with service provide
-            await _commandService.ExecuteAsync(context, argPos, _services);
+            // Create a command
+            var command = new QueuedCommand(_commandService,context,argPos,_services);
+            // Add to the queue
+            if (message.Content.Contains($"{Bot.BotConfig.Prefix}play"))
+            {
+                await Task.Delay(1000);
+            }
+            _commandQueue.Enqueue(command);
+            if (_commandQueue.Count != 0)
+            {
+                _mutex.WaitOne(-1);
+                if (!_commandExecuting)
+                {
+                    _commandExecuting = true;
+
+                    while (_commandExecuting)
+                    {
+                        // Execute
+                        var executingCommand = _commandQueue.Dequeue();
+                        await executingCommand.Execute();
+                        // Check queue. if 0 set _commandExecutuing to false
+                        if (_commandQueue.Count == 0)
+                        {
+                            _commandExecuting = false;
+                        }
+                    }
+                }
+                _mutex.ReleaseMutex();
+            }
+
         }
 
         // Member variables
@@ -66,5 +98,33 @@ namespace Cecilia_NET
         // From config
         // TODO: Add a config file if this gets big
         private readonly string _commandPrefix;
+        
+        // Command queuing
+        private Queue<QueuedCommand> _commandQueue;
+        private Mutex _mutex;
+        private bool _commandExecuting;
+
+
+        // Command for the queue
+        internal class QueuedCommand
+        {
+            private readonly CommandService _commandService;
+            private SocketCommandContext _context;
+            private int _argPos;
+            private readonly IServiceProvider _services;
+
+            public QueuedCommand(CommandService commandService,SocketCommandContext context, int argPos,IServiceProvider service)
+            {
+                _context = context;
+                _argPos = argPos;
+                _commandService = commandService;
+                _services = service;
+            }
+
+            public async Task Execute()
+            {
+                await _commandService.ExecuteAsync(_context, _argPos, _services);
+            }
+        }
     }
 }

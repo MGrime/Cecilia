@@ -29,7 +29,7 @@ namespace Cecilia_NET.Modules
         {
             // Check for pre-existing connection
             var response = Helpers.CeciliaEmbed(Context);
-            if (Context.Guild.AudioClient != null && Context.Guild.AudioClient.ConnectionState != ConnectionState.Disconnected)
+            if (Context.Guild.AudioClient != null && (Context.Guild.AudioClient.ConnectionState != ConnectionState.Disconnected || Context.Guild.AudioClient.ConnectionState != ConnectionState.Connecting))
             {
                 response.AddField("I'm already connected!", "Drag me to a different room if you want to switch.");
                 await Context.Channel.SendMessageAsync("",false,response.Build());
@@ -197,7 +197,7 @@ namespace Cecilia_NET.Modules
 
             // 4. Notify added
             await Context.Channel.SendMessageAsync("", false, builder.Build());
-            
+
             // Now play            
             await _musicPlayer.PlayAudio(Context);
         }

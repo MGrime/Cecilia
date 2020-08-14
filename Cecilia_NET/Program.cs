@@ -9,6 +9,7 @@
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 using Cecilia_NET.Services;
 using Discord;
@@ -91,7 +92,7 @@ namespace Cecilia_NET
             {
                 System.IO.Directory.CreateDirectory("AudioCache");
             }
-            
+
             // Transfer to async
             // Catching all exceptions that reach here just to clean up then close
             new Bot().MainASync(BotConfig).GetAwaiter().GetResult();
@@ -169,7 +170,7 @@ namespace Cecilia_NET
         public static DiscordConfig BotConfig { get; set; }
         public static SpotifyClientConfig SpotifyConfig { get; set; }
         public static OSPlatform OsPlatform { get; set; }
-
+        
 
     }
 }
