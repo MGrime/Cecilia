@@ -87,6 +87,7 @@ namespace Cecilia_NET
         public static async Task<System.Collections.Generic.List<FullTrack>> SpotifyQuery(string searchTerms)
         {
             // This is not perfect but should help with things like BAND - SONG (live in yada yada)
+
             if (searchTerms.Contains('('))
             {
                 searchTerms = searchTerms.Remove(searchTerms.IndexOf('('));

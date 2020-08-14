@@ -150,7 +150,7 @@ namespace Cecilia_NET.Services
                         // Match video to query to improve match
                         
 
-                        if (spotifyQuery != null)
+                        if (spotifyQuery.Result != null)
                         {
                             var spotifyHyperlink = $" [Listen on Spotify](https://open.spotify.com/track/{spotifyQuery[0].Id})";
 
