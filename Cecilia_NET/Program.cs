@@ -54,18 +54,9 @@ namespace Cecilia_NET
                 System.IO.Directory.CreateDirectory("AudioCache");
             }
             
-            SpotifyAPITest().GetAwaiter().GetResult();
-            
             // Transfer to async
             // Catching all exceptions that reach here just to clean up then close
             new Bot().MainASync(BotConfig).GetAwaiter().GetResult();
-        }
-
-        public static async Task SpotifyAPITest()
-        {
-            var spotify = new SpotifyClient(BotConfig.SpotifyKey);
-            var search = await spotify.Search.Item(new SearchRequest(SpotifyAPI.Web.SearchRequest.Types.Track, "rammstein sonne"));
-            Console.WriteLine("pause");
         }
 
         // Allows for async calls to Discord.NET

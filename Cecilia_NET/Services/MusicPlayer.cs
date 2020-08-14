@@ -144,6 +144,16 @@ namespace Cecilia_NET.Services
                         activeEmbed.WithTitle("Now Playing!");
                         // Remove queue counter at the end of fields
                         activeEmbed.Fields.RemoveAt(activeEmbed.Fields.Count - 1);
+                        //
+                        var spotifyQuery = Helpers.SpotifyQuery(activeClient.Queue.First.Value.MetaData.Title);
+
+                        if (spotifyQuery != null)
+                        {
+                            var spotifyHyperlink = $" [Listen on Spotify](https://open.spotify.com/track/{spotifyQuery.Result[0].Id})";
+
+                            activeEmbed.AddField("Music Platforms",spotifyHyperlink);
+                        }
+
                         // Send
                         var message = await context.Channel.SendMessageAsync("", false, activeEmbed.Build());
                         // Stream and await till finish

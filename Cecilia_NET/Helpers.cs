@@ -3,6 +3,8 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using SpotifyAPI.Web;
+using TagLib.Riff;
 using YoutubeExplode;
 using YoutubeExplode.Videos;
 using YoutubeExplode.Videos.Streams;
@@ -85,6 +87,20 @@ namespace Cecilia_NET
         {
             var youtube = new YoutubeClient();
             await youtube.Videos.Streams.DownloadAsync(streamInfo, filePath);
+        }
+
+        public static async Task<System.Collections.Generic.List<FullTrack>> SpotifyQuery(string searchTerms)
+        {
+            searchTerms = searchTerms.Remove(searchTerms.IndexOf('('));
+
+            if (Bot.BotConfig.SpotifyKey == "-1") return null;
+            
+            var spotify = new SpotifyClient(Bot.BotConfig.SpotifyKey);
+
+            var search = await spotify.Search.Item(new SearchRequest(SpotifyAPI.Web.SearchRequest.Types.Track, searchTerms));
+
+            if (search.Tracks.Items.Count == 0) return null;
+            else return search.Tracks.Items;
         }
     }
 }
