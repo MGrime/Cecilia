@@ -23,7 +23,7 @@ namespace Cecilia_NET.Modules
             _musicPlayer = player;
         }
         
-        [Command("join",RunMode = RunMode.Async)]
+        [Command("Join",RunMode = RunMode.Async)]
         [Summary("Joins the voice channel of the user. Alternatively pass in a channel with a ref")]
         public async Task JoinAsync(IVoiceChannel channel = null)
         {
@@ -69,7 +69,7 @@ namespace Cecilia_NET.Modules
             Helpers.DeleteUserCommand(Context);
         }
 
-        [Command("leave",RunMode = RunMode.Async)]
+        [Command("Leave",RunMode = RunMode.Async)]
         [Summary("Leaves the voice channel if we are connected to one")]
         public async Task LeaveAsync()
         {
@@ -111,7 +111,7 @@ namespace Cecilia_NET.Modules
             await Context.Channel.SendMessageAsync("",false,response.Build());
         }
 
-        [Command("play", RunMode = RunMode.Async)]
+        [Command("Play", RunMode = RunMode.Async)]
         [Summary("Adds a song to the play queue")]
         public async Task PlayAsync([Remainder] [Summary("The URL to play.")] string uri)
         {
@@ -202,7 +202,7 @@ namespace Cecilia_NET.Modules
             await _musicPlayer.PlayAudio(Context);
         }
 
-        [Command("skip", RunMode = RunMode.Async)]
+        [Command("Skip", RunMode = RunMode.Async)]
         [Summary("Skips current song")]
         public async Task SkipAsync()
         {
@@ -225,7 +225,7 @@ namespace Cecilia_NET.Modules
             Helpers.DeleteUserCommand(Context);
         }
 
-        [Command("pause", RunMode = RunMode.Async)]
+        [Command("Pause", RunMode = RunMode.Async)]
         [Summary("Pauses playback")]
         public async Task PauseAsync()
         {
@@ -245,7 +245,7 @@ namespace Cecilia_NET.Modules
             }
         }
 
-        [Command("play", RunMode = RunMode.Async)]
+        [Command("Play", RunMode = RunMode.Async)]
         [Summary("Resumes playback")]
         public async Task ResumeAsync()
         {
@@ -265,7 +265,7 @@ namespace Cecilia_NET.Modules
             }
         }
 
-        [Command("queue", RunMode = RunMode.Async)]
+        [Command("Queue", RunMode = RunMode.Async)]
         [Summary("List the queued songs")]
         public async Task QueueAsync()
         {
