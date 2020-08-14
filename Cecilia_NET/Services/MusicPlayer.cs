@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -158,6 +159,15 @@ namespace Cecilia_NET.Services
 
                         // Send
                         var message = await context.Channel.SendMessageAsync("", false, activeEmbed.Build());
+
+                        // Pin "Now-Playing" to the text channel
+                        await message.PinAsync();
+
+                        // Delete the "Cecilia pinned a message..." message
+                        var messages = context.Channel.GetMessagesAsync(1).Flatten();
+
+                        await context.Channel.DeleteMessageAsync(messages.ToArrayAsync().Result[0].Id);
+
                         // Stream and await till finish
                         while (true)
                         {
