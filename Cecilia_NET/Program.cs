@@ -90,7 +90,6 @@ namespace Cecilia_NET
                     CreateLogEntry(LogSeverity.Info, "Spotify",
                         "Loaded Spotify Integration!").GetAwaiter().GetResult();
                 }
-
             }
             else
             {
@@ -137,6 +136,11 @@ namespace Cecilia_NET
                     else if (input == "n" || input == "no")
                     {
                         SpotifyConfig = null;
+                        // Mark spotify.json with -1
+                        var outputSpotify = new SpotifyClientData();
+                        outputSpotify.ClientId = "-1";
+                        outputSpotify.ClientSecret = "-1";
+                        File.WriteAllText(@"spotify.json",JsonConvert.SerializeObject(outputSpotify));
                         break;
                     }
                     // Didnt read the instructions, loop again
