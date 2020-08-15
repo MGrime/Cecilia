@@ -115,8 +115,18 @@ namespace Cecilia_NET.Modules
         [Summary("Adds a song to the play queue")]
         public async Task PlayAsync([Remainder] [Summary("The URL to play.")] string uri)
         {
-            // Check if connected to voice
+            // Delete user command if not deleted by join
+            Helpers.DeleteUserCommand(Context);
+            
             var response = Helpers.CeciliaEmbed(Context);
+            // No playlist links yet
+            if (uri.Contains("playlist?list=", StringComparison.Ordinal))
+            {
+                response.AddField("Not yet supported! :-(", "I can't process playlist links yet, but I will do soon!");
+                await Context.Channel.SendMessageAsync("", false, response.Build());
+                return;
+            }
+            // Check if connected to voice
             if (Context.Guild.AudioClient == null || Context.Guild.AudioClient.ConnectionState != ConnectionState.Connected)
             {
                 // We aren't connected. But if the user is in a channel auto connect
@@ -130,15 +140,18 @@ namespace Cecilia_NET.Modules
                 {
                     response.AddField("I'm not connected!", "Join a voice channel and re-run the command.");
                     await Context.Channel.SendMessageAsync("", false, response.Build());
+                    return;
 
                 }
                 // Then continue if connected
             }
             
-            // Delete user command if not deleted by join
-            if (Context.Channel.GetMessageAsync(Context.Message.Id).Result != null)
+            // Check youtube link valid
+            if ((uri.Contains("http:") || (uri.Contains("https:"))) && !uri.Contains("youtube.com"))
             {
-                Helpers.DeleteUserCommand(Context);
+                response.AddField("Not yet supported! :-(", "I only support Youtube currently! More platforms coming soon!");
+                await Context.Channel.SendMessageAsync("", false, response.Build());
+                return;
             }
             
             // Send a searching embed
@@ -153,11 +166,13 @@ namespace Cecilia_NET.Modules
             // Get video metadata & download thumbnail
             Video video;
             // Calculate the kind of data the user has passed to the command
+            // Single URL
             if (uri.Contains("watch?v=", StringComparison.Ordinal))
             {
                 await Bot.CreateLogEntry(LogSeverity.Info, "Command", "Video search by URL");
                 video = await youtube.Videos.GetAsync(uri);
             }
+            // none
             else
             {
                 await Bot.CreateLogEntry(LogSeverity.Info, "Command", "Video search by terms");
