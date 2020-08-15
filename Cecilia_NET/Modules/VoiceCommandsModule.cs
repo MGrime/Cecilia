@@ -74,7 +74,7 @@ namespace Cecilia_NET.Modules
         }
 
         [Command("Leave", RunMode = RunMode.Async)]
-        [Summary("Leaves the voice channel if we are connected to one. Can only be executed by people with the KickMembers permission")]
+        [Summary("Leaves the voice channel connected to one. Can only be executed by people with the KickMembers permission if the queue is not empty")]
         public async Task LeaveAsync()
         {
             // Delete the user command
@@ -100,7 +100,7 @@ namespace Cecilia_NET.Modules
                 return;
             }
 
-            if (canExecute)
+            if (canExecute || _musicPlayer.ActiveAudioClients[Context.Guild.Id]?.Queue.Count == 0)
             {
                 // Check for connection
                 if (Context.Guild.AudioClient == null || Context.Guild.AudioClient.ConnectionState == ConnectionState.Disconnected)
