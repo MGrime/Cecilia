@@ -32,34 +32,39 @@ namespace Cecilia_NET
             OsPlatform = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? OSPlatform.Windows : OSPlatform.Linux;
 
             BotConfig = new DiscordConfig();
-            // Extract config from .json in root directory
-            while (Compare(BotConfig.Token, "", StringComparison.Ordinal) == 0)
+            SpotifyConfig = null;
+
+            while (BotConfig.Token == "" || BotConfig.Prefix == "")
             {
-                try
+                // This means app has been run before
+                if (File.Exists(@"bot.json"))
                 {
+                    // Read in the config
                     var rawConfig = System.IO.File.ReadAllText(@"bot.json").Replace(Environment.NewLine,"");
                     BotConfig = JsonConvert.DeserializeObject<DiscordConfig>(rawConfig);
+                    break;
                 }
-                catch (System.IO.FileNotFoundException e)
+                // Ask for token
+                while (BotConfig.Token == "")
                 {
-                    Console.WriteLine("ERROR: bot.json not found! Please download from GitHub repo! Press escape to quit! Press any other key to hot reload!");
-                    if (Console.ReadKey().Key == ConsoleKey.Escape)
-                    {
-                        return;
-                    }
+                    CreateLogEntry(LogSeverity.Info, "Setup", "Enter a Discord Bot Token (Instructions on Github): ",false).GetAwaiter().GetResult();
+                    BotConfig.Token = Console.ReadLine();
                 }
-                // Check its filled
-                if (BotConfig.Token == "" || BotConfig.Prefix == "")
+                // Ask for prefix
+                while (BotConfig.Prefix == "")
                 {
-                    Console.WriteLine("ERROR: Please fill a valid token and prefix to bot.json. Press escape to quit! Press any other key to hot reload!");
-                    if (Console.ReadKey().Key == ConsoleKey.Escape)
-                    {
-                        return;
-                    }
+                    CreateLogEntry(LogSeverity.Info,"Setup","Enter a Command Prefix (For example -- or !): ",false).GetAwaiter().GetResult();
+                    BotConfig.Prefix = Console.ReadLine();
                 }
+                // Save the config
+                var outputConfig = JsonConvert.SerializeObject(BotConfig);
+                File.WriteAllText(@"bot.json",outputConfig);
+
+
             }
-            // Look for spotify app file
-            try
+            
+            // Check for spotify file
+            if (File.Exists(@"spotify.json"))
             {
                 // Load in data
                 var spotifyConfigRaw = File.ReadAllText(@"spotify.json".Replace(Environment.NewLine, ""));
@@ -71,17 +76,72 @@ namespace Cecilia_NET
                     .WithAuthenticator(new ClientCredentialsAuthenticator(spotifyClientData.ClientId,spotifyClientData.ClientSecret));
                 // Notify success
                 Bot.CreateLogEntry(LogSeverity.Info, "Spotify",
-                    "Loaded Spotify Integration!");
+                    "Loaded Spotify Integration!"); 
             }
-            catch (System.IO.FileNotFoundException e)
+            else
             {
-                // Doesnt matter just means no spotify integration
-                Bot.CreateLogEntry(LogSeverity.Info, "Spotify",
-                    "Download the spotify.json from GitHub and fill it in for Spotify Integration!");
-                SpotifyConfig = null;
+                // Prepare to get input
+                string input = "";
+                // Require them to input something
+                while (input == "")
+                {
+                    // Ask for spotify integration
+                    CreateLogEntry(LogSeverity.Info,"Spotify","Would you like to setup spotify integration? Y/N: ",false).GetAwaiter().GetResult();
+                    input = Console.ReadLine();
+                    // They didnt type anything so loop
+                    if (input == null)
+                    {
+                        input = "";
+                    }
+                    else
+                    {
+                        // Lower case the input just in case
+                        input = input.ToLower();
+                        // Want spotify
+                        if (input == "y" || input == "yes")
+                        {
+                            var spotifyData = new SpotifyClientData();
+                            // Get spotify input 
+                            while (spotifyData.ClientId == "")
+                            {
+                                CreateLogEntry(LogSeverity.Info,"Spotify","Enter a client ID: ",false).GetAwaiter().GetResult();
+                                spotifyData.ClientId = Console.ReadLine();
+                            }
+                            while (spotifyData.ClientSecret == "")
+                            {
+                                CreateLogEntry(LogSeverity.Info,"Spotify","Enter the client secret: ", false).GetAwaiter().GetResult();
+                                spotifyData.ClientSecret = Console.ReadLine();
+                            }
+                            // Save config
+                            var outputSpotify = JsonConvert.SerializeObject(spotifyData);
+                            File.WriteAllText(@"spotify.json",outputSpotify);
+                            
+                            // Create spotify config
+                            // Load into credential thing
+                            SpotifyConfig = SpotifyClientConfig
+                                .CreateDefault()
+                                .WithAuthenticator(new ClientCredentialsAuthenticator(spotifyData.ClientId,spotifyData.ClientSecret));
+                            // Notify success
+                            Bot.CreateLogEntry(LogSeverity.Info, "Spotify",
+                                "Loaded Spotify Integration!"); 
+                        }
+                        // Dont
+                        else if (input == "n" || input == "no")
+                        {
+                            SpotifyConfig = null;
+                            break;
+                        }
+                        // Didnt read the instructions, loop again
+                        else
+                        {
+                            input = "";
+                        }
+                    }
+                    
+                }
+
             }
-            
-            
+
             // Check to see if the audio cache exists
             if (!Directory.Exists("AudioCache")) // If not create it
             {
@@ -108,7 +168,7 @@ namespace Cecilia_NET
             _client = new DiscordSocketClient();
             
             // Link to logging method
-            _client.Log += LogAsync;
+            _client.Log += LogAsyncLine;
             
             // Request login!
             await _client.LoginAsync(TokenType.Bot, config.Token);
@@ -147,16 +207,30 @@ namespace Cecilia_NET
         
         // Log to console for now
         // TODO: Link to a proper logging system. Perhaps even something GUI based for bot management.
-        public static Task CreateLogEntry(LogSeverity severity,string source,string msg)
+        public static Task CreateLogEntry(LogSeverity severity,string source,string msg, bool writeLine = true)
         {
             var logMsg = new LogMessage(severity,source,msg,null);
-            LogAsync(logMsg);
+            if (writeLine)
+            {
+                LogAsyncLine(logMsg);
+            }
+            else
+            {
+                LogAsync(logMsg);
+            }
             return Task.CompletedTask;
         }
-        public static Task LogAsync(LogMessage msg)
+        public static Task LogAsyncLine(LogMessage msg)
         {
             // Log to console
             Console.WriteLine(msg.ToString());
+            return Task.CompletedTask;
+        }
+
+        public static Task LogAsync(LogMessage msg)
+        {
+            // Log to console
+            Console.Write(msg.ToString());
             return Task.CompletedTask;
         }
         // Data members
