@@ -30,18 +30,31 @@ namespace Cecilia_NET
         {
             // Find out platform
             OsPlatform = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? OSPlatform.Windows : OSPlatform.Linux;
-
+            
+            // Create the configs
             BotConfig = new DiscordConfig();
             SpotifyConfig = null;
 
+            // Check for a create files if needed
+            if (!File.Exists(@"bot.json"))
+            {
+                File.Create(@"bot.json").Close();
+            }
+
+            if (!File.Exists(@"spotify.json"))
+            {
+                File.Create(@"spotify.json").Close();
+            }
+            
+
             while (BotConfig.Token == "" || BotConfig.Prefix == "")
             {
-                // This means app has been run before
-                if (File.Exists(@"bot.json"))
+                // Read in the config
+                var rawConfig = System.IO.File.ReadAllText(@"bot.json").Replace(Environment.NewLine,"");
+                BotConfig = JsonConvert.DeserializeObject<DiscordConfig>(rawConfig) ?? new DiscordConfig();
+                // This means ^ failed so create the memory for the configs
+                if (BotConfig.Token != "" && BotConfig.Prefix != "") 
                 {
-                    // Read in the config
-                    var rawConfig = System.IO.File.ReadAllText(@"bot.json").Replace(Environment.NewLine,"");
-                    BotConfig = JsonConvert.DeserializeObject<DiscordConfig>(rawConfig);
                     break;
                 }
                 // Ask for token
@@ -59,28 +72,29 @@ namespace Cecilia_NET
                 // Save the config
                 var outputConfig = JsonConvert.SerializeObject(BotConfig);
                 File.WriteAllText(@"bot.json",outputConfig);
-
-
+                
             }
             
-            // Check for spotify file
-            if (File.Exists(@"spotify.json"))
+            // Load in data
+            var spotifyConfigRaw = File.ReadAllText(@"spotify.json".Replace(Environment.NewLine, ""));
+            var spotifyClientData = JsonConvert.DeserializeObject<SpotifyClientData>(spotifyConfigRaw) ?? new SpotifyClientData();
+            if (spotifyClientData.ClientId != "" && spotifyClientData.ClientSecret != "")
             {
-                // Load in data
-                var spotifyConfigRaw = File.ReadAllText(@"spotify.json".Replace(Environment.NewLine, ""));
-                // Deserialize
-                var spotifyClientData = JsonConvert.DeserializeObject<SpotifyClientData>(spotifyConfigRaw);
-                // Load into credential thing
-                SpotifyConfig = SpotifyClientConfig
-                    .CreateDefault()
-                    .WithAuthenticator(new ClientCredentialsAuthenticator(spotifyClientData.ClientId,spotifyClientData.ClientSecret));
-                // Notify success
-                Bot.CreateLogEntry(LogSeverity.Info, "Spotify",
-                    "Loaded Spotify Integration!"); 
+                if (!(spotifyClientData.ClientId == "-1" || spotifyClientData.ClientId == "-1"))
+                {
+                    // Load into credential thing
+                    SpotifyConfig = SpotifyClientConfig
+                        .CreateDefault()
+                        .WithAuthenticator(new ClientCredentialsAuthenticator(spotifyClientData.ClientId,spotifyClientData.ClientSecret));
+                    // Notify success
+                    CreateLogEntry(LogSeverity.Info, "Spotify",
+                        "Loaded Spotify Integration!").GetAwaiter().GetResult();
+                }
+
             }
             else
             {
-                // Prepare to get input
+                    // Prepare to get input
                 string input = "";
                 // Require them to input something
                 while (input == "")
@@ -89,60 +103,51 @@ namespace Cecilia_NET
                     CreateLogEntry(LogSeverity.Info,"Spotify","Would you like to setup spotify integration? Y/N: ",false).GetAwaiter().GetResult();
                     input = Console.ReadLine();
                     // They didnt type anything so loop
-                    if (input == null)
+                    // Lower case the input just in case
+                    input = input?.ToLower();
+                    // Want spotify
+                    if (input == "y" || input == "yes")
+                    {
+                        var spotifyData = new SpotifyClientData();
+                        // Get spotify input 
+                        while (spotifyData.ClientId == "")
+                        {
+                            CreateLogEntry(LogSeverity.Info,"Spotify","Enter a client ID: ",false).GetAwaiter().GetResult();
+                            spotifyData.ClientId = Console.ReadLine();
+                        }
+                        while (spotifyData.ClientSecret == "")
+                        {
+                            CreateLogEntry(LogSeverity.Info,"Spotify","Enter the client secret: ", false).GetAwaiter().GetResult();
+                            spotifyData.ClientSecret = Console.ReadLine();
+                        }
+                        // Save config
+                        var outputSpotify = JsonConvert.SerializeObject(spotifyData);
+                        File.WriteAllText(@"spotify.json",outputSpotify);
+                        
+                        // Create spotify config
+                        // Load into credential thing
+                        SpotifyConfig = SpotifyClientConfig
+                            .CreateDefault()
+                            .WithAuthenticator(new ClientCredentialsAuthenticator(spotifyData.ClientId,spotifyData.ClientSecret));
+                        // Notify success
+                        Bot.CreateLogEntry(LogSeverity.Info, "Spotify",
+                            "Loaded Spotify Integration!"); 
+                    }
+                    // Dont
+                    else if (input == "n" || input == "no")
+                    {
+                        SpotifyConfig = null;
+                        break;
+                    }
+                    // Didnt read the instructions, loop again
+                    else
                     {
                         input = "";
                     }
-                    else
-                    {
-                        // Lower case the input just in case
-                        input = input.ToLower();
-                        // Want spotify
-                        if (input == "y" || input == "yes")
-                        {
-                            var spotifyData = new SpotifyClientData();
-                            // Get spotify input 
-                            while (spotifyData.ClientId == "")
-                            {
-                                CreateLogEntry(LogSeverity.Info,"Spotify","Enter a client ID: ",false).GetAwaiter().GetResult();
-                                spotifyData.ClientId = Console.ReadLine();
-                            }
-                            while (spotifyData.ClientSecret == "")
-                            {
-                                CreateLogEntry(LogSeverity.Info,"Spotify","Enter the client secret: ", false).GetAwaiter().GetResult();
-                                spotifyData.ClientSecret = Console.ReadLine();
-                            }
-                            // Save config
-                            var outputSpotify = JsonConvert.SerializeObject(spotifyData);
-                            File.WriteAllText(@"spotify.json",outputSpotify);
-                            
-                            // Create spotify config
-                            // Load into credential thing
-                            SpotifyConfig = SpotifyClientConfig
-                                .CreateDefault()
-                                .WithAuthenticator(new ClientCredentialsAuthenticator(spotifyData.ClientId,spotifyData.ClientSecret));
-                            // Notify success
-                            Bot.CreateLogEntry(LogSeverity.Info, "Spotify",
-                                "Loaded Spotify Integration!"); 
-                        }
-                        // Dont
-                        else if (input == "n" || input == "no")
-                        {
-                            SpotifyConfig = null;
-                            break;
-                        }
-                        // Didnt read the instructions, loop again
-                        else
-                        {
-                            input = "";
-                        }
-                    }
-                    
                 }
-
             }
 
-            // Check to see if the audio cache exists
+                // Check to see if the audio cache exists
             if (!Directory.Exists("AudioCache")) // If not create it
             {
                 System.IO.Directory.CreateDirectory("AudioCache");
