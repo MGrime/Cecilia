@@ -37,7 +37,9 @@ Cecilia is built on top of .NET Core which is cross-platform however, the curren
 
 ### Please Note
 
-Before running the bot through the docker image or natively you must create a bot application and add it to the server you wish to run Cecilia in. The steps for these can be found [here](https://discord.foxbot.me/stable/guides/getting_started/first-bot.html). Follow the first section "Creating a Discord Bot" to create a bot application and add it to your server, you can ignore the rest of the instructions. If you wish to use spotify integration you must create a bot [here](https://developer.spotify.com/dashboard/login); this is optional and the bot will run fine without spotify integration being enabled.
+Before running the bot through the docker image or natively you must create a bot application and add it to the server you wish to run Cecilia in. The steps for these can be found [here](https://discord.foxbot.me/stable/guides/getting_started/first-bot.html). Follow the first section "Creating a Discord Bot" to create a bot application and add it to your server, you can ignore the rest of the instructions. When adding the bot to your server please use the permissions number generated [here](https://finitereality.github.io/permissions-calculator/?v=37219392). This will give Cecilia all of the required permissions for it's features.
+
+If you wish to use spotify integration you must create a bot [here](https://developer.spotify.com/dashboard/login); this is optional and the bot will run fine without spotify integration being enabled.
 
 ### Downloading the Binary
 
