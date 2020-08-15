@@ -1,5 +1,6 @@
-![Image of Splash Art](https://github.com/MGrime/Cecilia/blob/master/Images/Small%20Brand%20With%20Smile.png)
-# A Discord Music bot written in C# and Discord.NET
+<p align="center">
+  <img src="https://github.com/MGrime/Cecilia/blob/master/Images/Med%20Brand.png">
+</p>
 
 ## What is Cecilia?
 
@@ -18,7 +19,6 @@ Cecilia aims to be a versitile and easy to use Discord Music Bot. It is a self-h
 * Automatic download cleanup.
 
 ## Planned Features
-
 * Support other platforms for audio download (Soundcloud, Vimeo etc.).
 * Discord Rich Presence integration.
 * Web interface for management.
@@ -64,8 +64,16 @@ If you wish to use spotify integration you must create a bot [here](https://deve
 3. Build the solution and run through your chosen IDE.
 
 ### Screenshots
+<p align="center">
+  <img src="https://github.com/MGrime/Cecilia/blob/master/Images/NowPlaying.png">
+  <img src="https://github.com/MGrime/Cecilia/blob/master/Images/AddedSong.png">
+</p>
 
-**Coming Soon**
+<p align="center">
+  <img src="https://github.com/MGrime/Cecilia/blob/master/Images/Queue.png">
+  <img src="https://github.com/MGrime/Cecilia/blob/master/Images/Skip.png">
+</p>
+
 
 ### Licenses and Thanks
 
