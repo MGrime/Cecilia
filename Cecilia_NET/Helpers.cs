@@ -40,6 +40,13 @@ namespace Cecilia_NET
             await context.Channel.DeleteMessageAsync(context.Message.Id);
 
         }
+
+        public static async void DeleteCommand(SocketCommandContext context, ulong messageId)
+        {
+            if (context.Channel.GetMessageAsync(messageId).Result == null) return;
+
+            await context.Channel.DeleteMessageAsync(messageId);
+        }
     
         // Remove characters that could break filenames & paths
         public static string ProcessVideoTitle(string videoTitle)

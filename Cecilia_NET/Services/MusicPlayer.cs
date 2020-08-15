@@ -33,10 +33,11 @@ namespace Cecilia_NET.Services
             if (_output != null) _output.Close(); // Close the FFMPEG output
         }
         
-        public void RegisterAudioClient(ulong guildId,IAudioClient client)
+        public void RegisterAudioClient(ulong guildId,IAudioClient client,ulong channelId)
         {
             // Add the audio client
             _activeAudioClients.Add(guildId, new WrappedAudioClient(client));
+            _activeAudioClients[guildId].ConnectedChannelId = channelId;
 
             Bot.CreateLogEntry(LogSeverity.Info,"Music Player","Client Added");
         }
@@ -96,7 +97,7 @@ namespace Cecilia_NET.Services
             return activeEmbed;
         }
 
-        public async Task PlayAudio(SocketCommandContext context)
+        public async Task PlayAudio(SocketCommandContext context,SkipProcessor skipProcessor)
         {
             // TODO: add checks if this used outside of the add song command
             // Find correct client
@@ -203,7 +204,10 @@ namespace Cecilia_NET.Services
                                 throw;
                             }
                         }
-
+                        // Cancel any skips
+                        
+                        skipProcessor.ClearSkip(context);
+                            
                         // Delete now-playing as it is now out of date
                         await context.Channel.DeleteMessageAsync(message.Id);
 
@@ -302,6 +306,7 @@ namespace Cecilia_NET.Services
         {
             // The raw client
             private IAudioClient _client;
+            private ulong _connectedChannelId;
             
             // Queue and a mutex for accessing
             private LinkedList<QueueEntry> _queue;
@@ -320,12 +325,19 @@ namespace Cecilia_NET.Services
                 _paused = false;
                 _skip = false;
                 _mutex = new Mutex();
+                _connectedChannelId = 0;
             }
 
             public IAudioClient Client
             {
                 get => _client;
                 set => _client = value;
+            }
+
+            public ulong ConnectedChannelId
+            {
+                get => _connectedChannelId;
+                set => _connectedChannelId = value;
             }
 
             public LinkedList<QueueEntry> Queue

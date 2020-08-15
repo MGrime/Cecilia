@@ -18,9 +18,10 @@ namespace Cecilia_NET.Modules
 {
     public class VoiceCommandsModule : ModuleBase<SocketCommandContext>
     {
-        public VoiceCommandsModule(MusicPlayer player)
+        public VoiceCommandsModule(MusicPlayer player,SkipProcessor processor)
         {
             _musicPlayer = player;
+            _skipProcessor = processor;
         }
         
         [Command("Join",RunMode = RunMode.Async)]
@@ -29,13 +30,16 @@ namespace Cecilia_NET.Modules
         {
             // Check for pre-existing connection
             var response = Helpers.CeciliaEmbed(Context);
-            if (Context.Guild.AudioClient != null && (Context.Guild.AudioClient.ConnectionState != ConnectionState.Disconnected || Context.Guild.AudioClient.ConnectionState != ConnectionState.Connecting))
+            if (Context.Guild.AudioClient != null)
             {
-                response.AddField("I'm already connected!", "Drag me to a different room if you want to switch.");
-                await Context.Channel.SendMessageAsync("",false,response.Build());
-                // Delete the user command
-                Helpers.DeleteUserCommand(Context);
-                return;
+                if (Context.Guild.AudioClient.ConnectionState != ConnectionState.Disconnected)
+                {
+                    response.AddField("I'm already connected!", "Drag me to a different room if you want to switch.");
+                    await Context.Channel.SendMessageAsync("",false,response.Build());
+                    // Delete the user command
+                    Helpers.DeleteUserCommand(Context);
+                    return;
+                }
             }
             
             // If none then check channel is valid
@@ -59,7 +63,7 @@ namespace Cecilia_NET.Modules
             // Now we have a valid context, channel and guild
             var client = await channel.ConnectAsync(true);
             
-            _musicPlayer.RegisterAudioClient(Context.Guild.Id,client);
+            _musicPlayer.RegisterAudioClient(Context.Guild.Id,client,channel.Id);
 
             // Display connection message
             response.AddField("I've Connected!", "Thanks for inviting me!",true);
@@ -104,6 +108,9 @@ namespace Cecilia_NET.Modules
                     File.Delete(file);
                 }
             }
+            
+            // Cancel any active skips
+            _skipProcessor.ClearSkip(Context);
             
             // Now we have disconnected
             var response = Helpers.CeciliaEmbed(Context);
@@ -214,30 +221,34 @@ namespace Cecilia_NET.Modules
             await Context.Channel.SendMessageAsync("", false, builder.Build());
 
             // Now play            
-            await _musicPlayer.PlayAudio(Context);
+            await _musicPlayer.PlayAudio(Context,_skipProcessor);
         }
 
         [Command("Skip", RunMode = RunMode.Async)]
         [Summary("Skips current song")]
         public async Task SkipAsync()
         {
-            // Log skip
-            await Bot.CreateLogEntry(LogSeverity.Info, "Commands", "Skip Requested!");
-            // Set skip boolean
-            _musicPlayer.ActiveAudioClients[Context.Guild.Id].Skip = true;
-            // Output skipping song message
-            var response = Helpers.CeciliaEmbed(Context);
-            if (_musicPlayer.ActiveAudioClients[Context.Guild.Id]?.Queue.Count > 1)
-            {
-                response.AddField("Skipping Song!", "Onto the next one...");
-            }
-            else
-            {
-                response.AddField("Skipping Song!", "Spin up some more songs with the play command!");
-            }
-            await Context.Channel.SendMessageAsync("", false, response.Build());
             // Delete the user command
             Helpers.DeleteUserCommand(Context);
+
+            if (_musicPlayer.ActiveAudioClients[Context.Guild.Id].Queue.Count != 0)
+            {
+                // Process
+                bool skipNow = await _skipProcessor.RegisterSkip(Context,_musicPlayer.ActiveAudioClients[Context.Guild.Id].ConnectedChannelId);
+
+                if (skipNow)
+                {
+                    // Set skip boolean
+                    _musicPlayer.ActiveAudioClients[Context.Guild.Id].Skip = true;
+                    // Output skipping song message
+                    var response = Helpers.CeciliaEmbed(Context);
+                    response.AddField("Skipping Song!",
+                        _musicPlayer.ActiveAudioClients[Context.Guild.Id]?.Queue.Count > 1
+                            ? "Onto the next one..."
+                            : "Spin up some more songs with the play command!");
+                    await Context.Channel.SendMessageAsync("", false, response.Build());
+                }// no else. The other function will have sent embed response
+            }
         }
 
         [Command("Pause", RunMode = RunMode.Async)]
@@ -264,6 +275,8 @@ namespace Cecilia_NET.Modules
         [Summary("Resumes playback")]
         public async Task ResumeAsync()
         {
+            // Delete the user command
+            Helpers.DeleteUserCommand(Context);
             // Check we are paused
             if (_musicPlayer.ActiveAudioClients[Context.Guild.Id].Paused)
             {
@@ -275,8 +288,6 @@ namespace Cecilia_NET.Modules
                 var response = Helpers.CeciliaEmbed(Context);
                 response.AddField("Resuming playback!", "Here come the bangers!");
                 await Context.Channel.SendMessageAsync("", false, response.Build());
-                // Delete the user command
-                Helpers.DeleteUserCommand(Context);
             }
         }
 
@@ -340,5 +351,6 @@ namespace Cecilia_NET.Modules
         }
 
         private readonly MusicPlayer _musicPlayer;
+        private readonly SkipProcessor _skipProcessor;
     }
 }

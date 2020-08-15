@@ -56,6 +56,18 @@ namespace Cecilia_NET
             
             // Create command context based on the message
             var context = new SocketCommandContext(_client,message);
+            
+            // Check if command is correct prefix but invalid
+            var commandExists = _commandService.Search(context, argPos);
+            if (!commandExists.IsSuccess)
+            {
+                Helpers.DeleteUserCommand(context);
+                var response = Helpers.CeciliaEmbed(context);
+                response.AddField("Invalid command!", "Do --help to see all my commands!");
+                await context.Channel.SendMessageAsync("",false,response.Build());
+                return;
+            }
+            
             // Create a command
             var command = new QueuedCommand(_commandService,context,argPos,_services);
             // Add to the queue
@@ -63,6 +75,7 @@ namespace Cecilia_NET
             {
                 await Task.Delay(1000);
             }
+
             _commandQueue.Enqueue(command);
             if (_commandQueue.Count != 0)
             {

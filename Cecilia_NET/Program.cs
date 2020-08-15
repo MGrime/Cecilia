@@ -198,6 +198,7 @@ namespace Cecilia_NET
                 .AddSingleton(_client)
                 .AddSingleton(_commandService)
                 .AddSingleton<MusicPlayer>()    // For music audio playback
+                .AddSingleton<SkipProcessor>() // Controlling skips
                 .BuildServiceProvider();
 
             _commandHandler = new CommandHandler(_client,_commandService,_services,config.Prefix);  
