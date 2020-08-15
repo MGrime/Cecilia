@@ -29,15 +29,8 @@ namespace Cecilia_NET.Services
 
         public void CloseFileStreams() // Closes FFMPEG, releasing file locks
         {
-            if (_ffmpeg != null && _output != null) // If the process and output are null
-            {
-                _output.Close(); // Close the output first
-                _ffmpeg.Close(); // Then close the process
-            }
-            else
-            {
-                Bot.CreateLogEntry(LogSeverity.Error, "Music Player", "ERROR: \"ffmpeg\" or \"output\" is null - cannot close streams! (See MusicPlayer.cs - Line 28)");
-            }
+            if (_ffmpeg != null) _ffmpeg.Close(); // Close the FFMPEG process
+            if (_output != null) _output.Close(); // Close the FFMPEG output
         }
         
         public void RegisterAudioClient(ulong guildId,IAudioClient client)
