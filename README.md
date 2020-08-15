@@ -18,7 +18,6 @@ Cecilia aims to be a versitile and easy to use Discord Music Bot. It is a self-h
 * Automatic download cleanup.
 
 ## Planned Features
-
 * Support other platforms for audio download (Soundcloud, Vimeo etc.).
 * Discord Rich Presence integration.
 * Web interface for management.
@@ -65,7 +64,12 @@ If you wish to use spotify integration you must create a bot [here](https://deve
 
 ### Screenshots
 
-**Coming Soon**
+![Image of Now Playing](https://github.com/MGrime/Cecilia/blob/master/Images/NowPlaying.png) 
+![Image of Adding Song](https://github.com/MGrime/Cecilia/blob/master/Images/AddedSong.png)
+
+![Image of Queue](https://github.com/MGrime/Cecilia/blob/master/Images/Queue.png)
+
+![Image of Skip](https://github.com/MGrime/Cecilia/blob/master/Images/Skip.png)
 
 ### Licenses and Thanks
 
