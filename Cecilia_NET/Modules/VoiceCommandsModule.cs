@@ -73,49 +73,78 @@ namespace Cecilia_NET.Modules
             Helpers.DeleteUserCommand(Context);
         }
 
-        [Command("Leave",RunMode = RunMode.Async)]
-        [Summary("Leaves the voice channel if we are connected to one")]
+        [Command("Leave", RunMode = RunMode.Async)]
+        [Summary("Leaves the voice channel if we are connected to one. Can only be executed by people with the KickMembers permission")]
         public async Task LeaveAsync()
         {
             // Delete the user command
             Helpers.DeleteUserCommand(Context);
-
-            // Check for connection
-            if (Context.Guild.AudioClient == null || Context.Guild.AudioClient.ConnectionState == ConnectionState.Disconnected)
+            var canExecute = false;
+            // It thinks this can fail but it cant
+            // Check if they can kick members as a show of admin
+            if (Context.User is SocketGuildUser guildUser)
             {
-                return;
-            }
-            // There is a connect in this guild
-            // Disconnect
-            Console.WriteLine("Leaving!");
-            await _musicPlayer.ActiveAudioClients[Context.Guild.Id].Client.StopAsync();
-            Console.WriteLine("Ive left");
-             _musicPlayer.RemoveAudioClient(Context.Guild.Id);
-            
-            // Cleanup audio cache
-            // If there are no active clients
-            if (_musicPlayer.ActiveAudioClients.Count == 0)
-            {
-                // Get correct directory
-                var directoryPrefix = Bot.OsPlatform == OSPlatform.Windows ? @"AudioCache\" : "AudioCache/";
-
-                // Close file streams so files can be deleted
-                _musicPlayer.CloseFileStreams();
-
-                // Clear it
-                foreach (var file in Directory.GetFiles(directoryPrefix))
+                foreach (var role in guildUser.Roles.ToList())
                 {
-                    File.Delete(file);
+                    // TODO: MAKE THIS A CONFIG PARAMETER
+                    if (role.Permissions.KickMembers)
+                    {
+                        canExecute = true;
+                        break;
+                    }
                 }
             }
+            else
+            {
+                // Just incase something goes oddly wrong. this will basically never hit
+                return;
+            }
+
+            if (canExecute)
+            {
+                // Check for connection
+                if (Context.Guild.AudioClient == null || Context.Guild.AudioClient.ConnectionState == ConnectionState.Disconnected)
+                {
+                    return;
+                }
+                // There is a connect in this guild
+                // Disconnect
+                Console.WriteLine("Leaving!");
+                await _musicPlayer.ActiveAudioClients[Context.Guild.Id].Client.StopAsync();
+                Console.WriteLine("Ive left");
+                _musicPlayer.RemoveAudioClient(Context.Guild.Id);
             
-            // Cancel any active skips
-            _skipProcessor.ClearSkip(Context);
+                // Cleanup audio cache
+                // If there are no active clients
+                if (_musicPlayer.ActiveAudioClients.Count == 0)
+                {
+                    // Get correct directory
+                    var directoryPrefix = Bot.OsPlatform == OSPlatform.Windows ? @"AudioCache\" : "AudioCache/";
+
+                    // Close file streams so files can be deleted
+                    _musicPlayer.CloseFileStreams();
+
+                    // Clear it
+                    foreach (var file in Directory.GetFiles(directoryPrefix))
+                    {
+                        File.Delete(file);
+                    }
+                }
             
-            // Now we have disconnected
-            var response = Helpers.CeciliaEmbed(Context);
-            response.AddField("I'm off!", "See you next time!");
-            await Context.Channel.SendMessageAsync("",false,response.Build());
+                // Cancel any active skips
+                _skipProcessor.ClearSkip(Context);
+            
+                // Now we have disconnected
+                var response = Helpers.CeciliaEmbed(Context);
+                response.AddField("I'm off!", "See you next time!");
+                await Context.Channel.SendMessageAsync("",false,response.Build());
+            }
+            else
+            {
+                var response = Helpers.CeciliaEmbed(Context);
+                response.AddField("Invalid permissions!", "You can't do that. Do --help to find out why.");
+                await Context.Channel.SendMessageAsync("",false,response.Build());
+            }
         }
 
         [Command("Play", RunMode = RunMode.Async)]
@@ -301,7 +330,7 @@ namespace Cecilia_NET.Modules
             {
                 audioClient = _musicPlayer.ActiveAudioClients[Context.Guild.Id];
             }
-            catch (KeyNotFoundException e)
+            catch (KeyNotFoundException)
             {
                 audioClient = null;
             }
