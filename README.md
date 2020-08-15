@@ -1,9 +1,6 @@
 <p align="center">
-  <img src="https://github.com/MGrime/Cecilia/blob/master/Images/Small%20Brand%20With%20Smile.png">
+  <img src="https://github.com/MGrime/Cecilia/blob/master/Images/Med%20Brand.png">
 </p>
-
-
-# A Discord Music bot written in C# and Discord.NET
 
 ## What is Cecilia?
 
