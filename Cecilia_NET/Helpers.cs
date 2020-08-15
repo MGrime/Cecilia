@@ -85,19 +85,34 @@ namespace Cecilia_NET
             await youtube.Videos.Streams.DownloadAsync(streamInfo, filePath);
         }
 
-        public static async Task<System.Collections.Generic.List<FullTrack>> SpotifyQuery(string searchTerms)
+        public static async Task<System.Collections.Generic.List<FullTrack>> SpotifyQuery(string searchTerm, string videoTitle)
         {
             // This is not perfect but should help with things like BAND - SONG (live in yada yada)
 
-            if (searchTerms.Contains('('))
+            string newSearchTerm = "";
+
+            if (searchTerm.Contains("http"))
             {
-                searchTerms = searchTerms.Remove(searchTerms.IndexOf('('));
+                newSearchTerm = videoTitle;
+            }
+            else
+            {
+                newSearchTerm = searchTerm;
             }
 
-            if (searchTerms.Contains('['))
+            if (newSearchTerm.Contains('('))
             {
-                searchTerms = searchTerms.Remove(searchTerms.IndexOf('['));
+                newSearchTerm = newSearchTerm.Remove(newSearchTerm.IndexOf('('));
             }
+
+            if (newSearchTerm.Contains('['))
+            {
+                newSearchTerm = newSearchTerm.Remove(newSearchTerm.IndexOf('['));
+            }
+
+            newSearchTerm = newSearchTerm.Replace('/', ' ');
+
+            newSearchTerm = newSearchTerm.Replace("  ", " ");
 
             // If they haven't provided a client then leave
             if (Bot.SpotifyConfig == null) return null;
@@ -106,7 +121,7 @@ namespace Cecilia_NET
             SearchResponse search;
             try
             {
-                search = await spotify.Search.Item(new SearchRequest(SpotifyAPI.Web.SearchRequest.Types.Track, searchTerms));
+                search = await spotify.Search.Item(new SearchRequest(SpotifyAPI.Web.SearchRequest.Types.Track, newSearchTerm));
             }
             catch (Exception e)
             {
@@ -117,6 +132,5 @@ namespace Cecilia_NET
             if (search.Tracks.Items?.Count == 0) return null;
             else return search.Tracks.Items;
         }
-        
     }
 }
