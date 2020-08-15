@@ -1,4 +1,7 @@
-![Image of Splash Art](https://github.com/MGrime/Cecilia/blob/master/Images/Small%20Brand%20With%20Smile.png)
+<p align="center">
+  <img src="https://github.com/MGrime/Cecilia/blob/master/Images/Small%20Brand%20With%20Smile.png>
+</p>
+
 # A Discord Music bot written in C# and Discord.NET
 
 ## What is Cecilia?
@@ -63,13 +66,16 @@ If you wish to use spotify integration you must create a bot [here](https://deve
 3. Build the solution and run through your chosen IDE.
 
 ### Screenshots
+<p align="center">
+  <img src="https://github.com/MGrime/Cecilia/blob/master/Images/NowPlaying.png">
+  <img src="https://github.com/MGrime/Cecilia/blob/master/Images/AddedSong.png">
+</p>
 
-![Image of Now Playing](https://github.com/MGrime/Cecilia/blob/master/Images/NowPlaying.png) 
-![Image of Adding Song](https://github.com/MGrime/Cecilia/blob/master/Images/AddedSong.png)
+<p align="center">
+  <img src="https://github.com/MGrime/Cecilia/blob/master/Images/Queue.png">
+  <img src="https://github.com/MGrime/Cecilia/blob/master/Images/Skip.png">
+</p>
 
-![Image of Queue](https://github.com/MGrime/Cecilia/blob/master/Images/Queue.png)
-
-![Image of Skip](https://github.com/MGrime/Cecilia/blob/master/Images/Skip.png)
 
 ### Licenses and Thanks
 
