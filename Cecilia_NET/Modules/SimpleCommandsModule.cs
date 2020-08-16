@@ -19,15 +19,19 @@ namespace Cecilia_NET.Modules
         [Summary("Pings a message back. Allows checking of health")]
         public async Task PingAsync()
         {
-            await Context.Channel.SendMessageAsync($"Pong! (Requested by {Context.User.Username})");
-            // Delete sending message
-            await Context.Message.DeleteAsync();
+            Helpers.DeleteUserCommand(Context);
+            var response = Helpers.CeciliaEmbed(Context);
+            response.AddField("Pong!", "Im here, thanks for checking on me!");
+            await Context.Channel.SendMessageAsync("",false,response.Build());
         }
 
         [Command("WhoIs")]
         [Summary("Sends an embed with data on the attached user")]
         public async Task WhoisAsync([Summary("The user to query")] SocketUser user)
         {
+            // Delete sending message
+            Helpers.DeleteUserCommand(Context);
+
             // Cast to guild specific data
             if (!(user is SocketGuildUser guildUser)) return;
             
@@ -36,18 +40,25 @@ namespace Cecilia_NET.Modules
             
             // Set title and image
             // Title is the users username
-            embedBuilder.WithTitle(user.Username);
+            embedBuilder.WithTitle(guildUser.Username);
             // Image is profile pic
             embedBuilder.WithImageUrl(guildUser.GetAvatarUrl());
             // Output nickname if they have one
-            embedBuilder.AddField("Name", Helpers.GetDisplayName(Context.User) );
+            if (Helpers.GetDisplayName(guildUser) != guildUser.Username)
+            {
+                embedBuilder.AddField("Nickname", Helpers.GetDisplayName(guildUser) );
+            }
+            // when they joined
+            if (guildUser.JoinedAt.HasValue)
+            {
+                var joinTime = guildUser.JoinedAt.Value;
+                embedBuilder.AddField("Joined",
+                    $"{joinTime.Day}/{joinTime.Month}/{joinTime.Year} @ {joinTime.Hour}:{Helpers.FixTime(joinTime.Minute)}:{Helpers.FixTime(joinTime.Second)}");
+            }
             // Footer with requester
             embedBuilder.WithFooter($"Requested by {Helpers.GetDisplayName(Context.User)}");
 
             await Context.Channel.SendMessageAsync("",false,embedBuilder.Build());
-            // Delete sending message
-            await Context.Message.DeleteAsync();
-
         }
         
         [Command("Help")]

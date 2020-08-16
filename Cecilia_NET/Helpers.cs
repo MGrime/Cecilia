@@ -85,6 +85,12 @@ namespace Cecilia_NET
             outBuilder.WithFooter($"Requested by {GetDisplayName(context.User)} @ {DateTime.Now.Hour}:{correctedMinutes}");
             return outBuilder;
         }
+        
+        // Add a 0 before numbers number 9
+        public static String FixTime(int time)
+        {
+            return time <= 9 ? $"0{time}" : time.ToString();
+        }
 
         public static async Task DownloadSong(IStreamInfo streamInfo, string filePath)
         {
