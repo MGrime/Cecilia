@@ -4,7 +4,9 @@
 
 ## What is Cecilia?
 
-Cecilia aims to be a versitile and easy to use Discord Music Bot. It is a self-hosted bot meaning you must provide the server that will run the bot through your own bot application. Currently in this early stage of development it supports playback of music from Youtube, through both direct links and searches, however extra services will be added as development progresses.
+Cecilia aims to be a versitile and easy to use Discord Music Bot. It is a self-hosted bot meaning you must provide the server that will run the bot through your own bot application. Cecilia provides builds for both x86_64 and arm machines. This means you can host Cecilia on a Raspberry Pi!
+
+Currently in this early stage of development it supports playback of music from Youtube, through both direct links and searches, however extra services will be added as development progresses.
 
 ## Completed Features
 
