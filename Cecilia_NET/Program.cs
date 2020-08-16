@@ -32,25 +32,36 @@ namespace Cecilia_NET
             OsPlatform = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? OSPlatform.Windows : OSPlatform.Linux;
             
             // Create the configs
+            var configPrefix = Bot.OsPlatform == OSPlatform.Windows ? @"Config\" : "Config/";
+
             BotConfig = new DiscordConfig();
             SpotifyConfig = null;
 
-            // Check for a create files if needed
-            if (!File.Exists(@"bot.json"))
+            if (!Directory.Exists(configPrefix))
             {
-                File.Create(@"bot.json").Close();
+                Directory.CreateDirectory(configPrefix);
             }
 
-            if (!File.Exists(@"spotify.json"))
+            // Check for a create files if needed
+            if (!File.Exists($@"{configPrefix}bot.json"))
             {
-                File.Create(@"spotify.json").Close();
+                // Botconfig already set to null values
+                File.WriteAllText($@"{configPrefix}bot.json",JsonConvert.SerializeObject(BotConfig));
+            }
+
+            if (!File.Exists($@"{configPrefix}spotify.json"))
+            {
+                var outputSpotify = new SpotifyClientData();
+                outputSpotify.ClientId = "";
+                outputSpotify.ClientSecret = "";
+                File.WriteAllText($@"{configPrefix}spotify.json",JsonConvert.SerializeObject(outputSpotify));
             }
             
 
             while (BotConfig.Token == "" || BotConfig.Prefix == "")
             {
                 // Read in the config
-                var rawConfig = System.IO.File.ReadAllText(@"bot.json").Replace(Environment.NewLine,"");
+                var rawConfig = System.IO.File.ReadAllText($@"{configPrefix}bot.json").Replace(Environment.NewLine,"");
                 BotConfig = JsonConvert.DeserializeObject<DiscordConfig>(rawConfig) ?? new DiscordConfig();
                 // This means ^ failed so create the memory for the configs
                 if (BotConfig.Token != "" && BotConfig.Prefix != "") 
@@ -71,12 +82,12 @@ namespace Cecilia_NET
                 }
                 // Save the config
                 var outputConfig = JsonConvert.SerializeObject(BotConfig);
-                File.WriteAllText(@"bot.json",outputConfig);
+                File.WriteAllText($@"{configPrefix}bot.json",outputConfig);
                 
             }
             
             // Load in data
-            var spotifyConfigRaw = File.ReadAllText(@"spotify.json".Replace(Environment.NewLine, ""));
+            var spotifyConfigRaw = File.ReadAllText($@"{configPrefix}spotify.json".Replace(Environment.NewLine, ""));
             var spotifyClientData = JsonConvert.DeserializeObject<SpotifyClientData>(spotifyConfigRaw) ?? new SpotifyClientData();
             if (spotifyClientData.ClientId != "" && spotifyClientData.ClientSecret != "")
             {
@@ -121,7 +132,7 @@ namespace Cecilia_NET
                         }
                         // Save config
                         var outputSpotify = JsonConvert.SerializeObject(spotifyData);
-                        File.WriteAllText(@"spotify.json",outputSpotify);
+                        File.WriteAllText($@"{configPrefix}spotify.json",outputSpotify);
                         
                         // Create spotify config
                         // Load into credential thing
@@ -140,7 +151,7 @@ namespace Cecilia_NET
                         var outputSpotify = new SpotifyClientData();
                         outputSpotify.ClientId = "-1";
                         outputSpotify.ClientSecret = "-1";
-                        File.WriteAllText(@"spotify.json",JsonConvert.SerializeObject(outputSpotify));
+                        File.WriteAllText($@"{configPrefix}spotify.json",JsonConvert.SerializeObject(outputSpotify));
                         break;
                     }
                     // Didnt read the instructions, loop again
