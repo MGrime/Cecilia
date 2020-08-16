@@ -28,7 +28,9 @@ Cecilia aims to be a versitile and easy to use Discord Music Bot. It is a self-h
 
 ### Recommended - Docker
 
-The recommended way of running Cecilia is through the Docker image. This is hosted on [Docker Hub](https://hub.docker.com/repository/docker/mgrime/cecilia/) so can be pulled and run on any x86_64 platform with Docker installed by following the instructions on the Docker Hub page (requires Linux containers on Windows). AMD64 builds will be coming soon!
+The recommended way of running Cecilia is through the Docker image. This is hosted on [Docker Hub](https://hub.docker.com/repository/docker/mgrime/cecilia/). Two images are provided:
+1. An amd64 image - This is the image you should run if you are using a standard PC. It can run using Docker on Linux or Windows (requires Linux containers to be enabled)
+2. An arm32 Image - This image can be run on ARM processors. Currently the only tested platform is Raspi OS on a Raspberry Pi 3 B+. However I see no reason it shouldn't work on other Raspberry Pi variants; however performance may be poor on a lower end Raspberry Pi.
 
 ### Natively
 
