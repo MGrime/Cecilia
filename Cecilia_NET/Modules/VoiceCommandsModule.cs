@@ -77,8 +77,17 @@ namespace Cecilia_NET.Modules
         [Summary("Leaves the voice channel connected to one. Can only be executed by people with the KickMembers permission if the queue is not empty")]
         public async Task LeaveAsync()
         {
+            
             // Delete the user command
             Helpers.DeleteUserCommand(Context);
+            
+            // Check validity of command
+            if (!Helpers.ChannelValidity(Context, _musicPlayer))
+            {
+                return;
+            }
+
+            
             var canExecute = false;
             // It thinks this can fail but it cant
             // Check if they can kick members as a show of admin
@@ -182,6 +191,12 @@ namespace Cecilia_NET.Modules
                 // Then continue if connected
             }
             
+            // Check validity of command
+            if (!Helpers.ChannelValidity(Context, _musicPlayer))
+            {
+                return;
+            }
+
             // Check youtube link valid
             if ((uri.Contains("http:") || (uri.Contains("https:"))) && !uri.Contains("youtube.com"))
             {
@@ -259,6 +274,12 @@ namespace Cecilia_NET.Modules
         {
             // Delete the user command
             Helpers.DeleteUserCommand(Context);
+            
+            // Check the validity of the user executing this command
+            if (!Helpers.ChannelValidity(Context, _musicPlayer))
+            {
+                return;
+            }
 
             if (_musicPlayer.ActiveAudioClients[Context.Guild.Id].Queue.Count != 0)
             {
@@ -284,6 +305,15 @@ namespace Cecilia_NET.Modules
         [Summary("Pauses playback")]
         public async Task PauseAsync()
         {
+            // Delete the user command
+            Helpers.DeleteUserCommand(Context);
+            
+            // Check validity of command
+            if (!Helpers.ChannelValidity(Context, _musicPlayer))
+            {
+                return;
+            }
+            
             // Check we aren't already paused
             if (!_musicPlayer.ActiveAudioClients[Context.Guild.Id].Paused)
             {
@@ -295,8 +325,6 @@ namespace Cecilia_NET.Modules
                 var response = Helpers.CeciliaEmbed(Context);
                 response.AddField("Pausing playback!", "Take a break and recharge!");
                 await Context.Channel.SendMessageAsync("", false, response.Build());
-                // Delete the user command
-                Helpers.DeleteUserCommand(Context);
             }
         }
 
@@ -306,6 +334,13 @@ namespace Cecilia_NET.Modules
         {
             // Delete the user command
             Helpers.DeleteUserCommand(Context);
+            
+            // Check validity of command
+            if (!Helpers.ChannelValidity(Context, _musicPlayer))
+            {
+                return;
+            }
+            
             // Check we are paused
             if (_musicPlayer.ActiveAudioClients[Context.Guild.Id].Paused)
             {

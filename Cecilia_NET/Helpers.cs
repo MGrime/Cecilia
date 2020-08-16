@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Cecilia_NET.Services;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
@@ -145,5 +146,30 @@ namespace Cecilia_NET
             if (search.Tracks.Items?.Count == 0) return null;
             else return search.Tracks.Items;
         }
+        
+        public static bool ChannelValidity(SocketCommandContext ctx,MusicPlayer player)
+        {
+            // Check if bot is in a channel
+            if (player.ActiveAudioClients[ctx.Guild.Id].Client == null ||
+                player.ActiveAudioClients[ctx.Guild.Id].Client.ConnectionState == ConnectionState.Disconnected)
+            {
+                return false;
+            }
+            
+            // Check if they are in a channel
+            var guildUser = ctx.User as SocketGuildUser;
+            if (guildUser.VoiceChannel == null)
+            {
+                return false;
+            }
+            // They have to in the bots channel
+            if (guildUser.VoiceChannel.Id != player.ActiveAudioClients[ctx.Guild.Id].ConnectedChannelId)
+            {
+                return false;
+            }
+
+            return true;
+        }
     }
+    
 }
