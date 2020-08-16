@@ -1,5 +1,6 @@
-![Image of Splash Art](https://github.com/MGrime/Cecilia/blob/master/Images/Small%20Brand%20With%20Smile.png)
-# A Discord Music bot written in C# and Discord.NET
+<p align="center">
+  <img src="https://github.com/MGrime/Cecilia/blob/master/Images/Med%20Brand.png">
+</p>
 
 ## What is Cecilia?
 
@@ -11,16 +12,15 @@ Cecilia aims to be a versitile and easy to use Discord Music Bot. It is a self-h
 * Spotify integration to find playing song on spotify and link it in chat.
 * Search with terms or a URL
 * Pause/Resume/Skip control at any time.
-* Unlimited queue size
-* Rich Embed responses and automatic message deletion for a clean interface
-* Serving of music from a single host to multiple servers (**WARNING**: Functionality is experimental)
+* Vote based skipping system with dynamic messaging updating.
+* Unlimited queue size.
+* Rich Embed responses and automatic message deletion for a clean interface.
+* Serving of music from a single host to multiple servers (**WARNING**: Functionality is experimental).
 * Automatic download cleanup.
 
 ## Planned Features
-
 * Support other platforms for audio download (Soundcloud, Vimeo etc.).
 * Discord Rich Presence integration.
-* Limit skipping & leaving to user who requested the current song.
 * Web interface for management.
 * Removing from queue.
 
@@ -64,8 +64,16 @@ If you wish to use spotify integration you must create a bot [here](https://deve
 3. Build the solution and run through your chosen IDE.
 
 ### Screenshots
+<p align="center">
+  <img src="https://github.com/MGrime/Cecilia/blob/master/Images/NowPlaying.png">
+  <img src="https://github.com/MGrime/Cecilia/blob/master/Images/AddedSong.png">
+</p>
 
-**Coming Soon**
+<p align="center">
+  <img src="https://github.com/MGrime/Cecilia/blob/master/Images/Queue.png">
+  <img src="https://github.com/MGrime/Cecilia/blob/master/Images/Skip.png">
+</p>
+
 
 ### Licenses and Thanks
 
