@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# cecilia_raspi.sh
+# cecilia_raspi_install.sh
 # Version: 1.0
 # Last Changed 16/08/2020:
     # 16/08/2020 - Initial script
