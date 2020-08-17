@@ -14,4 +14,16 @@
       <PackageReference Include="YouTubeSearch" Version="2.2.3" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Compile Remove="Trastevere\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <EmbeddedResource Remove="Trastevere\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="Trastevere\**" />
+    </ItemGroup>
+
 </Project>
