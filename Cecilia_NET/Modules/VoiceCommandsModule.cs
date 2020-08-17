@@ -86,7 +86,6 @@ namespace Cecilia_NET.Modules
             {
                 return;
             }
-
             
             var canExecute = false;
             // It thinks this can fail but it cant

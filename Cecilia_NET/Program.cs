@@ -221,11 +221,14 @@ namespace Cecilia_NET
             {
                 if (user.Username == _client.CurrentUser.Username)
                 {
-                    if (_musicPlayerSingleton.ActiveAudioClients.ContainsKey(nState.VoiceChannel.Guild.Id))
+                    if (nState.VoiceChannel != null)
                     {
-                        _musicPlayerSingleton.ActiveAudioClients[nState.VoiceChannel.Guild.Id].ConnectedChannelId =
-                            nState.VoiceChannel.Id;
-                        CreateLogEntry(LogSeverity.Info, "Voice Client", $"Channel changed! New channel: {nState.VoiceChannel.Name}");
+                        if (_musicPlayerSingleton.ActiveAudioClients.ContainsKey(nState.VoiceChannel.Guild.Id))
+                        {
+                            _musicPlayerSingleton.ActiveAudioClients[nState.VoiceChannel.Guild.Id].ConnectedChannelId =
+                                nState.VoiceChannel.Id;
+                            CreateLogEntry(LogSeverity.Info, "Voice Client", $"Channel changed! New channel: {nState.VoiceChannel.Name}");
+                        }
                     }
                 }
                 
