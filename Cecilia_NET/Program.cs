@@ -212,7 +212,26 @@ namespace Cecilia_NET
                 .AddSingleton<SkipProcessor>() // Controlling skips
                 .BuildServiceProvider();
 
-            _commandHandler = new CommandHandler(_client,_commandService,_services,config.Prefix);  
+            _musicPlayerSingleton = _services.GetService<MusicPlayer>();
+
+            _commandHandler = new CommandHandler(_client,_commandService,_services,config.Prefix);
+            
+            // Track voice changes
+            _client.UserVoiceStateUpdated += (user, oState, nState) =>
+            {
+                if (user.Username == _client.CurrentUser.Username)
+                {
+                    if (_musicPlayerSingleton.ActiveAudioClients.ContainsKey(nState.VoiceChannel.Guild.Id))
+                    {
+                        _musicPlayerSingleton.ActiveAudioClients[nState.VoiceChannel.Guild.Id].ConnectedChannelId =
+                            nState.VoiceChannel.Id;
+                        CreateLogEntry(LogSeverity.Info, "Voice Client", $"Channel changed! New channel: {nState.VoiceChannel.Name}");
+                    }
+                }
+                
+                return Task.CompletedTask;
+            };
+            
             // Register commands
             await _commandHandler.InstallCommandsAsync();
 
@@ -220,8 +239,8 @@ namespace Cecilia_NET
             await _client.StartAsync();
 
             await _client.SetGameAsync("some tunes!", null, ActivityType.Listening);
-            
-            
+
+
             // Block this main task until program is closed
             await Task.Delay(-1);
         }
@@ -264,6 +283,8 @@ namespace Cecilia_NET
         private CommandHandler _commandHandler;
         // Manages dependency injection
         private IServiceProvider _services;
+
+        private MusicPlayer _musicPlayerSingleton;    // Allows correct channel processing when move is outside of 
         // Config
         public static DiscordConfig BotConfig { get; set; }
         public static SpotifyClientConfig SpotifyConfig { get; set; }
