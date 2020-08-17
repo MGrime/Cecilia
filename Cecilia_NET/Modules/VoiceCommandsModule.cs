@@ -116,6 +116,10 @@ namespace Cecilia_NET.Modules
                     return;
                 }
                 // There is a connect in this guild
+
+                // Delete now-playing as it is now out of date
+                await _musicPlayer.DeleteNowPlayingMessage(Context);
+
                 // Disconnect
                 Console.WriteLine("Leaving!");
                 await _musicPlayer.ActiveAudioClients[Context.Guild.Id].Client.StopAsync();

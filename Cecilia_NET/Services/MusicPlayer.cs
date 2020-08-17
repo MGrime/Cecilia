@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Audio;
 using Discord.Commands;
+using Discord.Rest;
 using SpotifyAPI.Web;
 using YoutubeExplode;
 using YoutubeExplode.Videos;
@@ -22,9 +23,12 @@ namespace Cecilia_NET.Services
 
         private Stream _output; // The FFMPEG library ouput stream
 
+        public RestUserMessage _nowPlayingMessage { get; set; }// A reference to the "Now Playing" message
+
         public MusicPlayer() // Constructor
         {
             _activeAudioClients = new Dictionary<ulong, WrappedAudioClient>();
+            _nowPlayingMessage = null;
         }
 
         public void CloseFileStreams() // Closes FFMPEG, releasing file locks
@@ -156,10 +160,10 @@ namespace Cecilia_NET.Services
 
                         }
                         // Send
-                        var message = await context.Channel.SendMessageAsync("", false, activeEmbed.Build());
+                        _nowPlayingMessage = await context.Channel.SendMessageAsync("", false, activeEmbed.Build());
 
                         // Pin "Now-Playing" to the text channel
-                        await message.PinAsync();
+                        await _nowPlayingMessage.PinAsync();
 
                         // Delete the "Cecilia pinned a message..." message
                         var messages = context.Channel.GetMessagesAsync(1).Flatten();
@@ -200,16 +204,16 @@ namespace Cecilia_NET.Services
                                 // Output exception
                                 await Bot.CreateLogEntry(LogSeverity.Error, "MusicPlayer", e.ToString());
                                 // Delete now-playing as it is now out of date
-                                await context.Channel.DeleteMessageAsync(message.Id);
+                                await DeleteNowPlayingMessage(context);
                                 throw;
                             }
                         }
                         // Cancel any skips
                         
                         skipProcessor.ClearSkip(context);
-                            
+
                         // Delete now-playing as it is now out of date
-                        await context.Channel.DeleteMessageAsync(message.Id);
+                        await DeleteNowPlayingMessage(context);
 
                         // Flush buffer
                         await discord?.FlushAsync();
@@ -287,6 +291,14 @@ namespace Cecilia_NET.Services
                     response.AddField("That's all folks!", "Spin up some more songs with the play command!");
                     await context.Channel.SendMessageAsync("", false, response.Build());
                 }
+            }
+        }
+
+        public async Task DeleteNowPlayingMessage(SocketCommandContext context)
+        {
+            if (_nowPlayingMessage != null)
+            {
+                await context.Channel.DeleteMessageAsync(_nowPlayingMessage);
             }
         }
 

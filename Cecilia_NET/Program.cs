@@ -234,6 +234,21 @@ namespace Cecilia_NET
                 
                 return Task.CompletedTask;
             };
+
+            // Checks to see if the latest deleted message is the "Now Playing" message
+            _client.MessageDeleted += (cacheable, channel) =>
+            {
+                if (_musicPlayerSingleton._nowPlayingMessage != null)
+                {
+                    //  If so, set the reference to the now playing message in the MusicPlayer instance
+                    if (cacheable.Id == _musicPlayerSingleton._nowPlayingMessage.Id)
+                    {
+                        _musicPlayerSingleton._nowPlayingMessage = null;
+                    }
+                }
+
+                return Task.CompletedTask;
+            };
             
             // Register commands
             await _commandHandler.InstallCommandsAsync();
@@ -247,7 +262,12 @@ namespace Cecilia_NET
             // Block this main task until program is closed
             await Task.Delay(-1);
         }
-        
+
+        private Task _client_MessageDeleted(Cacheable<IMessage, ulong> arg1, ISocketMessageChannel arg2)
+        {
+            throw new NotImplementedException();
+        }
+
         // Log to console for now
         // TODO: Link to a proper logging system. Perhaps even something GUI based for bot management.
         public static Task CreateLogEntry(LogSeverity severity,string source,string msg, bool writeLine = true)
