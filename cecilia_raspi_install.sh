@@ -23,6 +23,8 @@ read -p "Press enter to continue, or CTRL + C to exit . . . "
 # Check if user has docker group
 echo "First we will need to add you to the Docker group"
 echo "This will close the script. Immediately rexecute the script when you can."
+echo "DO NOT CLOSE THE CONSOLE WINDOW AFTER THE SCRIPT CLOSES!"
+echo "The script uses newgrp to switch your permissions to the docker group without requiring a logout. Therefore it is important to keep the same console window."
 read -p "Press enter to continue . . . "
 
 if [ $(getent group docker) ]; then
