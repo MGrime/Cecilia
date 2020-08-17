@@ -2,6 +2,14 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cecilia_NET", "Cecilia_NET\Cecilia_NET.csproj", "{246F3293-F34B-4DCE-B7CE-221BEC90C39C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Trastevere", "Trastevere\Trastevere\Trastevere.csproj", "{878B92A7-683D-413D-8892-E1562ACCB907}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Trastevere.Gtk", "Trastevere\Trastevere.Gtk\Trastevere.Gtk.csproj", "{DBF06F1F-8371-4948-A027-253435643694}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Trastevere.Mac", "Trastevere\Trastevere.Mac\Trastevere.Mac.csproj", "{3128BEDC-0E01-44B8-AD84-5CE60CE1DE5C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Trastevere.Wpf", "Trastevere\Trastevere.Wpf\Trastevere.Wpf.csproj", "{D4DD28CC-8C95-4E49-80EC-2DA879431D74}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +20,21 @@ Global
 		{246F3293-F34B-4DCE-B7CE-221BEC90C39C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{246F3293-F34B-4DCE-B7CE-221BEC90C39C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{246F3293-F34B-4DCE-B7CE-221BEC90C39C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{878B92A7-683D-413D-8892-E1562ACCB907}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{878B92A7-683D-413D-8892-E1562ACCB907}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{878B92A7-683D-413D-8892-E1562ACCB907}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{878B92A7-683D-413D-8892-E1562ACCB907}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DBF06F1F-8371-4948-A027-253435643694}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DBF06F1F-8371-4948-A027-253435643694}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DBF06F1F-8371-4948-A027-253435643694}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DBF06F1F-8371-4948-A027-253435643694}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3128BEDC-0E01-44B8-AD84-5CE60CE1DE5C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3128BEDC-0E01-44B8-AD84-5CE60CE1DE5C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3128BEDC-0E01-44B8-AD84-5CE60CE1DE5C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3128BEDC-0E01-44B8-AD84-5CE60CE1DE5C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D4DD28CC-8C95-4E49-80EC-2DA879431D74}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D4DD28CC-8C95-4E49-80EC-2DA879431D74}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D4DD28CC-8C95-4E49-80EC-2DA879431D74}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D4DD28CC-8C95-4E49-80EC-2DA879431D74}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
