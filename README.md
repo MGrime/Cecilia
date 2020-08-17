@@ -17,7 +17,7 @@ Currently in this early stage of development it supports playback of music from 
 * Vote based skipping system with dynamic messaging updating.
 * Unlimited queue size.
 * Rich Embed responses and automatic message deletion for a clean interface.
-* Serving of music from a single host to multiple servers (**WARNING**: Functionality is experimental).
+* Serving of music from a single host to multiple servers (**WARNING**: Functionality is very experimental and largely untested. One host per server is highly recommended).
 * Automatic download cleanup.
 
 ## Planned Features
@@ -33,6 +33,8 @@ Currently in this early stage of development it supports playback of music from 
 The recommended way of running Cecilia is through the Docker image. This is hosted on [Docker Hub](https://hub.docker.com/repository/docker/mgrime/cecilia/). Two images are provided:
 1. An amd64 image - This is the image you should run if you are using a standard PC. It can run using Docker on Linux or Windows (requires Linux containers to be enabled)
 2. An arm32 Image - This image can be run on ARM processors. Currently the only tested platform is Raspi OS on a Raspberry Pi 3 B+. However I see no reason it shouldn't work on other Raspberry Pi variants; however performance may be poor on a lower end Raspberry Pi.
+
+Using the Docker image is the best way to host Cecilia, especially if have multiple servers, as you can make different containers for the each server (each using a unique bot token) from a single image. This is the recommended way to achieve this.
 
 ### Natively
 
