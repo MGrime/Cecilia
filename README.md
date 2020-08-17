@@ -17,7 +17,7 @@ Currently in this early stage of development it supports playback of music from 
 * Vote based skipping system with dynamic messaging updating.
 * Unlimited queue size.
 * Rich Embed responses and automatic message deletion for a clean interface.
-* Serving of music from a single host to multiple servers (**WARNING**: Functionality is experimental).
+* Serving of music from a single host to multiple servers (**WARNING**: Functionality is experimental. One host per server is highly recommended).
 * Automatic download cleanup.
 
 ## Planned Features
