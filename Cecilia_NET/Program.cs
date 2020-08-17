@@ -238,12 +238,12 @@ namespace Cecilia_NET
             // Checks to see if the latest deleted message is the "Now Playing" message
             _client.MessageDeleted += (cacheable, channel) =>
             {
-                if (_musicPlayerSingleton._nowPlayingMessage != null)
+                if (_musicPlayerSingleton.NowPlayingMessage != null)
                 {
                     //  If so, set the reference to the now playing message in the MusicPlayer instance
-                    if (cacheable.Id == _musicPlayerSingleton._nowPlayingMessage.Id)
+                    if (cacheable.Id == _musicPlayerSingleton.NowPlayingMessage.Id)
                     {
-                        _musicPlayerSingleton._nowPlayingMessage = null;
+                        _musicPlayerSingleton.NowPlayingMessage = null;
                     }
                 }
 
@@ -261,11 +261,6 @@ namespace Cecilia_NET
 
             // Block this main task until program is closed
             await Task.Delay(-1);
-        }
-
-        private Task _client_MessageDeleted(Cacheable<IMessage, ulong> arg1, ISocketMessageChannel arg2)
-        {
-            throw new NotImplementedException();
         }
 
         // Log to console for now

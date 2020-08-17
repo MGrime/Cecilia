@@ -23,12 +23,12 @@ namespace Cecilia_NET.Services
 
         private Stream _output; // The FFMPEG library ouput stream
 
-        public RestUserMessage _nowPlayingMessage { get; set; }// A reference to the "Now Playing" message
+        public RestUserMessage NowPlayingMessage { get; set; }// A reference to the "Now Playing" message
 
         public MusicPlayer() // Constructor
         {
             _activeAudioClients = new Dictionary<ulong, WrappedAudioClient>();
-            _nowPlayingMessage = null;
+            NowPlayingMessage = null;
         }
 
         public void CloseFileStreams() // Closes FFMPEG, releasing file locks
@@ -160,10 +160,10 @@ namespace Cecilia_NET.Services
 
                         }
                         // Send
-                        _nowPlayingMessage = await context.Channel.SendMessageAsync("", false, activeEmbed.Build());
+                        NowPlayingMessage = await context.Channel.SendMessageAsync("", false, activeEmbed.Build());
 
                         // Pin "Now-Playing" to the text channel
-                        await _nowPlayingMessage.PinAsync();
+                        await NowPlayingMessage.PinAsync();
 
                         // Delete the "Cecilia pinned a message..." message
                         var messages = context.Channel.GetMessagesAsync(1).Flatten();
@@ -296,9 +296,9 @@ namespace Cecilia_NET.Services
 
         public async Task DeleteNowPlayingMessage(SocketCommandContext context)
         {
-            if (_nowPlayingMessage != null)
+            if (NowPlayingMessage != null)
             {
-                await context.Channel.DeleteMessageAsync(_nowPlayingMessage);
+                await context.Channel.DeleteMessageAsync(NowPlayingMessage);
             }
         }
 
