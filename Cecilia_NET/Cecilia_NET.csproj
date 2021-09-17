@@ -6,12 +6,12 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Discord.Net" Version="2.2.0" />
-      <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="5.0.0-preview.7.20364.11" />
-      <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
-      <PackageReference Include="SpotifyAPI.Web" Version="6.0.0-beta.9" />
-      <PackageReference Include="YoutubeExplode" Version="5.1.4" />
-      <PackageReference Include="YouTubeSearch" Version="2.2.3" />
+      <PackageReference Include="Discord.Net" Version="2.4.0" />
+      <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="5.0.2" />
+      <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+      <PackageReference Include="SpotifyAPI.Web" Version="6.2.1" />
+      <PackageReference Include="YoutubeExplode" Version="6.0.5" />
+      <PackageReference Include="YouTubeSearch" Version="2.2.6" />
     </ItemGroup>
 
     <ItemGroup>

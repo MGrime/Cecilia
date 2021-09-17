@@ -90,10 +90,11 @@ namespace Cecilia_NET.Services
             // create embed
             // Caching so it can be modified for playing message
             var activeEmbed = _activeAudioClients[context.Guild.Id].Queue.Last.Value.EmbedBuilder;
-            activeEmbed.WithImageUrl(videoData.Thumbnails.MediumResUrl);
+
+            activeEmbed.WithImageUrl(videoData.Thumbnails[0].Url);
             activeEmbed.WithTitle("Added song!");// This can be switched later
             activeEmbed.AddField("Title",$"[{videoData.Title}]({videoData.Url})");
-            activeEmbed.AddField("Length", videoData.Duration.Minutes + " min " + videoData.Duration.Seconds + " secs");
+            activeEmbed.AddField("Length", videoData.Duration?.Minutes + " min " + videoData.Duration?.Seconds + " secs");
             activeEmbed.AddField("Uploader", videoData.Author);
             activeEmbed.AddField("Queue Position", _activeAudioClients[context.Guild.Id].Queue.Count);
 

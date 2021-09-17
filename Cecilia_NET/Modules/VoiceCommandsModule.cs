@@ -262,7 +262,7 @@ namespace Cecilia_NET.Modules
 
             // 3. Add to queue and send stream info so download can be processed
             await Context.Channel.DeleteMessageAsync(searchEmbed.Id);
-            var builder = await _musicPlayer.AddSongToQueue(Context,$"{directoryPrefix}{processedTitle}.mp3",video,streams.GetAudioOnly().WithHighestBitrate(), uri,!fileExists);
+            var builder = await _musicPlayer.AddSongToQueue(Context,$"{directoryPrefix}{processedTitle}.mp3",video,streams.GetAudioOnlyStreams().GetWithHighestBitrate(), uri,!fileExists);
 
             // 4. Notify added
             await Context.Channel.SendMessageAsync("", false, builder.Build());
@@ -397,10 +397,10 @@ namespace Cecilia_NET.Modules
                 var video = item.MetaData;
                 
                 string fieldValue = "";
-                var correctedSeconds = video.Duration.Seconds <= 9
-                    ? $"0{video.Duration.Seconds}"
-                    : video.Duration.Seconds.ToString();
-                fieldValue += " Length: " + video.Duration.Minutes + ":" + correctedSeconds;
+                var correctedSeconds = video.Duration?.Seconds <= 9
+                    ? $"0{video.Duration?.Seconds}"
+                    : video.Duration?.Seconds.ToString();
+                fieldValue += " Length: " + video.Duration?.Minutes + ":" + correctedSeconds;
                 fieldValue += $" [View on YT]({video.Url})";
                 
                 embedBuilder.AddField($"{queuePosition}: {video.Title}" , fieldValue);
